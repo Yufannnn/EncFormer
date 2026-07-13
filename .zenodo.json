@@ -1,0 +1,15 @@
+{
+  "title": "EncFormer: Secure and Efficient Transformer Inference over Encrypted Data",
+  "upload_type": "software",
+  "description": "Official self-contained implementation of EncFormer. The archive contains the GPU CKKS implementation, CKKS--MPC conversion, BPMax, MBNorm, BOLT GELU, real two-party EzPC/SCI execution, native dependency source, the BERT-base SST-2 checkpoint, local evaluation data, and evaluation commands.",
+  "creators": [
+    {"name": "Zhu, Yufan"},
+    {"name": "Jin, Chao"},
+    {"name": "Aung, Khin Mi Mi"},
+    {"name": "Xiao, Xiaokui"}
+  ],
+  "access_right": "open",
+  "license": "mit",
+  "version": "1.0.0",
+  "keywords": ["EncFormer", "homomorphic encryption", "secure multi-party computation", "private Transformer inference", "CKKS"]
+}

@@ -1,0 +1,8 @@
+numpy==2.2.6
+transformers==5.13.0
+tokenizers==0.22.2
+safetensors==0.8.0
+tqdm==4.68.3
+PyYAML==6.0.3
+pybind11==2.13.6
+pytest==8.3.4

@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use EncFormer, please cite the paper below."
+title: "EncFormer: Secure and Efficient Transformer Inference over Encrypted Data"
+abstract: >-
+  EncFormer is a hybrid FHE + MPC system for private Transformer inference:
+  linear layers run under GPU CKKS homomorphic encryption (PhantomFHE) and
+  the non-linear layers run as two-party MPC protocols (EzPC/SCI) —
+  Π_MBMax (Batch Power-Max softmax), Π_MBLN (Batch LayerNorm), and Π_GELU
+  (BOLT piecewise GELU).
+type: software
+version: "1.0.0"
+date-released: 2026-07-13
+license: MIT
+authors:
+  - family-names: Zhu
+    given-names: Yufan
+  - family-names: Jin
+    given-names: Chao
+  - family-names: Aung
+    given-names: "Khin Mi Mi"
+  - family-names: Xiao
+    given-names: Xiaokui
+keywords:
+  - homomorphic encryption
+  - secure multi-party computation
+  - private transformer inference
+  - CKKS
+  - EzPC
+preferred-citation:
+  type: article
+  title: "EncFormer: Secure and Efficient Transformer Inference over Encrypted Data"
+  authors:
+    - family-names: Zhu
+      given-names: Yufan
+    - family-names: Jin
+      given-names: Chao
+    - family-names: Aung
+      given-names: "Khin Mi Mi"
+    - family-names: Xiao
+      given-names: Xiaokui
+  journal: "IEEE Transactions on Dependable and Secure Computing (TDSC)"
