@@ -34,6 +34,17 @@ bash scripts/build.sh 70
 
 Use `80` for A100, `86` for RTX 30, or `89` for RTX 40.
 
+## Checkpoint
+
+The KD-distilled BERT-base SST-2 checkpoint (`checkpoints/encformer-sst2/`) is tracked with [Git LFS](https://git-lfs.com), so a normal `git clone` fetches it when `git lfs` is installed. If it is missing or appears as a small pointer file (no Git LFS installed, or the repository is over its LFS bandwidth quota), download it directly from the release instead:
+
+```bash
+wget https://github.com/Yufannnn/EncFormer/releases/download/v1.0.0/encformer-sst2.tar.gz
+tar xzf encformer-sst2.tar.gz -C checkpoints/
+```
+
+`sha256sum -c CHECKSUMS.sha256` (below) verifies either way.
+
 ## Run
 
 ```bash
