@@ -88,6 +88,17 @@ third_party/ezpc-sci/      native two-party bindings
 third_party/ezpc/SCI/      SCI, SEAL, and Eigen source
 ```
 
+## Citation
+
+```bibtex
+@article{zhu2026encformer,
+  title   = {EncFormer: Secure and Efficient Transformer Inference over Encrypted Data},
+  author  = {Zhu, Yufan and Jin, Chao and Aung, Khin Mi Mi and Xiao, Xiaokui},
+  journal = {IEEE Transactions on Dependable and Secure Computing},
+  year    = {2026}
+}
+```
+
 ## License
 
 EncFormer is released under the MIT License. Vendored dependencies retain their original licenses.
