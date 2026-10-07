@@ -111,7 +111,6 @@ def secure_gelu_algorithm4_split(
     ops: Any,
     consts: Algorithm4Constants,
 ) -> Any:
-
     x2 = ops.ewmulcc(x_poly, x_poly)
     x3 = ops.ewmulcc(x2, x_poly)
     x4 = ops.ewmulcc(x2, x2)
@@ -159,7 +158,6 @@ def secure_gelu_preeval_select(
     ops: Any,
     consts: Algorithm4Constants,
 ) -> Any:
-
     b0 = ops.cmp(x_cmp, consts.neg_thresh)
     b1 = ops.cmp(x_cmp, consts.zero)
     b2 = ops.cmp(consts.pos_thresh, x_cmp)
@@ -246,12 +244,10 @@ def secure_gelu_plain_fixedpoint(x: np.ndarray, cfg: SecureGeluConfig | None = N
 
 
 def precompute_f0_f1_fixedpoint(x: np.ndarray, cfg: SecureGeluConfig | None = None) -> tuple[np.ndarray, np.ndarray]:
-
     cfg = load_secure_gelu_config() if cfg is None else cfg
     ops = PlainFixedPointOps(cfg)
     consts = build_plain_algorithm4_constants(cfg)
     x_q = ops.encode(x)
-
     x2 = ops.ewmulcc(x_q, x_q)
     x3 = ops.ewmulcc(x2, x_q)
     x4 = ops.ewmulcc(x2, x2)
@@ -268,7 +264,6 @@ def precompute_f0_f1_fixedpoint(x: np.ndarray, cfg: SecureGeluConfig | None = No
 
 
 def secure_gelu_preeval_plain_fixedpoint(x: np.ndarray, cfg: SecureGeluConfig | None = None) -> np.ndarray:
-
     cfg = load_secure_gelu_config() if cfg is None else cfg
     ops = PlainFixedPointOps(cfg)
     consts = build_plain_algorithm4_constants(cfg)
@@ -298,9 +293,7 @@ def secure_gelu_piecewise_reference(x: np.ndarray, cfg: SecureGeluConfig | None 
     return quantize_real_array(y, cfg)
 
 
-def selector_bits_public(
-    x: np.ndarray, cfg: SecureGeluConfig | None = None
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def selector_bits_public(x: np.ndarray, cfg: SecureGeluConfig | None = None) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     cfg = load_secure_gelu_config() if cfg is None else cfg
     consts = build_quantized_real_algorithm4_constants(cfg)
     xq = quantize_real_array(x, cfg)

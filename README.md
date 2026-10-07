@@ -11,9 +11,9 @@ Official implementation of **EncFormer: Secure and Efficient Transformer Inferen
 
 - Ubuntu 22.04
 - Python 3.10
-- CUDA 12.1
-- GCC 11
-- NVIDIA GPU with compute capability 7.0+ and 24 GB+ memory
+- CUDA 12.1+
+- GCC 11+
+- NVIDIA GPU with compute capability 7.0+ and 40 GB+ memory
 
 ## Setup
 
@@ -29,10 +29,10 @@ pip install -r requirements.txt
 ## Build
 
 ```bash
-bash scripts/build.sh 70
+bash scripts/build.sh 80
 ```
 
-Use `80` for A100, `86` for RTX 30, or `89` for RTX 40.
+The argument is the CUDA architecture: `80` for A100, `86` for RTX A6000, `89` for L40S, `90` for H100.
 
 ## Checkpoint
 
@@ -52,15 +52,18 @@ sha256sum -c CHECKSUMS.sha256
 python scripts/check.py
 python scripts/eval.py --quick --gpu 0
 python scripts/eval.py --full --gpu 0
-python scripts/demo.py --idx 40 --gpu 0
 bash scripts/2pc.sh 40 12 0
 ```
+
+`2pc.sh <idx> <layers> <gpu>` classifies one SST-2 validation sentence with the two-party protocol: the server
+(Phantom GPU CKKS, evaluation keys only) and the client (secret key) run as separate processes and evaluate the
+non-linear layers with EzPC/SCI. `python scripts/demo.py --text "..."` classifies a custom sentence.
 
 ## Docker
 
 ```bash
 docker build -t encformer .
-docker run --rm --gpus all encformer --idx 40 --gpu 0
+docker run --rm --gpus all --shm-size=8g encformer --idx 40 --gpu 0
 ```
 
 ## Package
@@ -69,7 +72,7 @@ docker run --rm --gpus all encformer --idx 40 --gpu 0
 bash scripts/package.sh release
 ```
 
-This creates `release/EncFormer-v1.0.0.zip` and its SHA-256 file. Use `assets/EncFormer-Profile.png` as the repository social preview and record image.
+This creates `release/EncFormer-v2.0.0.zip` and its SHA-256 file. Use `assets/EncFormer-Profile.png` as the repository social preview and record image.
 
 ## Structure
 

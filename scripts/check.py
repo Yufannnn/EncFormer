@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import subprocess
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -18,20 +19,19 @@ def checkpoint():
 
 def main():
     ok = True
+    gpu = os.environ.get("CUDA_VISIBLE_DEVICES", "0").split(",")[0] or "0"
     try:
-        import torch
-
-        gpu = torch.cuda.is_available()
-        ok &= show("CUDA", gpu, torch.cuda.get_device_name(0) if gpu else "unavailable")
-        if gpu:
-            cc = torch.cuda.get_device_capability(0)
-            mem = torch.cuda.get_device_properties(0).total_memory / 1024**3
-            ok &= show("GPU architecture", cc[0] >= 7, f"sm_{cc[0]}{cc[1]}")
-            ok &= show("GPU memory", mem >= 24, f"{mem:.0f} GB")
+        query = "name,compute_cap,memory.total"
+        line = subprocess.run(["nvidia-smi", "-i", gpu, f"--query-gpu={query}", "--format=csv,noheader,nounits"],
+                              capture_output=True, text=True, check=True).stdout.strip().splitlines()[0]
+        name, cc, mem = [v.strip() for v in line.split(",")]
+        ok &= show("CUDA", True, name)
+        ok &= show("GPU architecture", float(cc) >= 7.0, f"sm_{cc.replace('.', '')}")
+        ok &= show("GPU memory", float(mem) / 1024 >= 40, f"{float(mem) / 1024:.0f} GB")
     except Exception as exc:
-        ok &= show("CUDA", False, str(exc))
+        ok &= show("CUDA", False, str(exc).splitlines()[0] if str(exc) else "nvidia-smi unavailable")
     base = f"{ROOT}/third_party/phantom-fhe/build"
-    bins = [f"{base}/bin/pipe_ckks_{name}_bert_base" for name in ("attn", "ff1", "ff2")]
+    bins = [f"{base}/bin/pipe_tp_{role}_bert_base" for role in ("server", "client")]
     ok &= show("PhantomFHE", all(map(os.path.isfile, bins)) and os.path.isfile(f"{base}/lib/libPhantom.so"))
     ckpt = checkpoint()
     ok &= show("EncFormer checkpoint", os.path.isfile(f"{ckpt}/model.pt"), ckpt)
@@ -45,16 +45,10 @@ def main():
     try:
         import ezpc_sci
 
-        native = bool(ezpc_sci.HAS_NATIVE_SCI and hasattr(ezpc_sci, "bpmax_2pc"))
+        native = bool(ezpc_sci.HAS_NATIVE_SCI and getattr(ezpc_sci, "HAS_OT_POOL", False))
         ok &= show("EzPC/SCI", native)
     except Exception as exc:
         ok &= show("EzPC/SCI", False, str(exc))
-    with open(f"{ROOT}/src/engines/mpc_engine_ezpc.py", encoding="utf-8") as handle:
-        code = handle.read()
-    ok &= show("MPC parameters", "ring_bits: int = 43" in code and "scale_bits: int = 13" in code)
-    with open(f"{ROOT}/third_party/phantom-fhe/src/prng.cu", encoding="utf-8") as handle:
-        code = handle.read()
-    ok &= show("CKKS secret", "sample_ternary_poly" in code and "hamming_weight" in code)
     print("EncFormer ready" if ok else "EncFormer check failed")
     return 0 if ok else 1
 

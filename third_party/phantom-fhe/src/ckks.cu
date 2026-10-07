@@ -134,6 +134,36 @@ void PhantomCKKSEncoder::encode_internal(const PhantomContext &context, const st
     destination.scale_ = scale;
 }
 
+void PhantomCKKSEncoder::encode_device(const PhantomContext &context, const cuDoubleComplex *d_values, size_t n,
+                                       double scale, PhantomPlaintext &destination, size_t chain_index,
+                                       int max_coeff_bit_count) {
+    const auto &stream = cudaStreamPerThread;
+    auto &context_data = context.get_context_data(chain_index);
+    auto &parms = context_data.parms();
+    auto &rns_tool = context_data.gpu_rns_tool();
+    const size_t coeff_modulus_size = parms.coeff_modulus().size();
+    const size_t coeff_count = parms.poly_modulus_degree();
+    const size_t log_slot_count = arith::get_power_of_two(slots_);
+    if (n == 0 || n > slots_) throw std::invalid_argument("encode_device: bad slot count");
+    if (scale <= 0 || (static_cast<int>(log2(scale)) + 1 >= context_data.total_coeff_modulus_bit_count()))
+        throw std::invalid_argument("encode_device: scale out of bounds");
+    if (max_coeff_bit_count <= 0 || max_coeff_bit_count >= context_data.total_coeff_modulus_bit_count())
+        throw std::invalid_argument("encode_device: coefficient bound out of range");
+    if (destination.coeff_count() != context.coeff_mod_size_ * context.poly_degree_)
+        destination.resize(context.coeff_mod_size_, context.poly_degree_, stream);
+
+    cudaMemsetAsync(gpu_ckks_msg_vec_->in(), 0, slots_ * sizeof(cuDoubleComplex), stream);
+    size_t gridDimGlb = std::ceil((float) n / (float) blockDimGlb.x);
+    bit_reverse_kernel<<<gridDimGlb, blockDimGlb, 0, stream>>>(
+            gpu_ckks_msg_vec_->in(), const_cast<cuDoubleComplex *>(d_values), n, log_slot_count);
+    special_fft_backward(*gpu_ckks_msg_vec_, log_slot_count, scale / static_cast<double>(slots_), stream);
+    rns_tool.base_Ql().decompose_array(destination.data(), gpu_ckks_msg_vec_->in(), coeff_count,
+                                       max_coeff_bit_count, stream);
+    nwt_2d_radix8_forward_inplace(destination.data(), context.gpu_rns_tables(), coeff_modulus_size, 0, stream);
+    destination.chain_index_ = chain_index;
+    destination.scale_ = scale;
+}
+
 void PhantomCKKSEncoder::decode_internal(const PhantomContext &context, const PhantomPlaintext &plain,
                                          std::vector<cuDoubleComplex> &destination, const cudaStream_t &stream) {
     auto &context_data = context.get_context_data(plain.chain_index_);

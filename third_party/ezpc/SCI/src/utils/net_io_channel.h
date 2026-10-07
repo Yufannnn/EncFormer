@@ -31,6 +31,8 @@ Enquiries about further applications and development opportunities are welcome.
 #include <stdlib.h>
 #include <string.h>
 #include <string>
+#include <vector>
+#include <chrono>
 using std::string;
 
 #include <arpa/inet.h>
@@ -59,6 +61,12 @@ public:
   int port;
   uint64_t counter = 0;
   uint64_t num_rounds = 0;
+  uint64_t recv_counter = 0;
+  uint64_t ext_bytes = 0;
+  uint64_t ext_ots = 0;
+  uint64_t ext_choice_bits = 0;
+  double ext_seconds = 0.0;
+  uint64_t ef_derand_bytes = 0;
   bool FBF_mode;
   LastCall last_call = LastCall::None;
   NetIO(const char *address, int port, bool full_buffer = false,
@@ -197,6 +205,7 @@ public:
       else
         fprintf(stderr, "error: net_send_data %d\n", res);
     }
+    recv_counter += len;
   }
 };
 /**@}*/

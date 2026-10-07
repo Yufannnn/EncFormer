@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "encformer"
-version = "1.0.0"
+version = "2.0.0"
 description = "Secure and Efficient Transformer Inference over Encrypted Data"
 readme = "README.md"
 license = {text = "MIT"}
@@ -16,9 +16,6 @@ dependencies = [
     "tqdm>=4.60",
     "PyYAML>=6.0",
 ]
-
-[project.optional-dependencies]
-crypten = ["crypten>=0.4"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

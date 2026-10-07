@@ -8,8 +8,8 @@ abstract: >-
   Π_MBMax (Batch Power-Max softmax), Π_MBLN (Batch LayerNorm), and Π_GELU
   (BOLT piecewise GELU).
 type: software
-version: "1.0.0"
-date-released: 2026-07-13
+version: "2.0.0"
+date-released: 2026-10-08
 license: MIT
 authors:
   - family-names: Zhu

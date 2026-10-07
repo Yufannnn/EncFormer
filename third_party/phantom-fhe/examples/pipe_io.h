@@ -1,13 +1,16 @@
 #pragma once
-// pipe_io.h — File I/O for the native pipe CKKS pipeline.
-// Data is raw float64 arrays (no headers). Dimensions are compile-time constants.
 
+#include <chrono>
 #include <cstddef>
 #include <cstdio>
 #include <cstdlib>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace pipe_io {
 
@@ -15,6 +18,13 @@ inline std::string get_pipe_dir() {
     const char *d = std::getenv("PIPE_DIR");
     if (!d || d[0] == '\0')
         throw std::runtime_error("PIPE_DIR environment variable not set");
+    return std::string(d);
+}
+
+inline std::string get_pipe_dir_or(const char *env_name) {
+    const char *d = std::getenv(env_name);
+    if (!d || d[0] == '\0')
+        throw std::runtime_error(std::string(env_name) + " environment variable not set");
     return std::string(d);
 }
 
@@ -56,4 +66,36 @@ inline void write_f64_vec(const char *path, const std::vector<double> &v) {
     write_f64(path, v.data(), v.size());
 }
 
-} // namespace pipe_io
+inline const pid_t parent_at_start = getppid();
+
+inline bool file_present(const std::string &path) {
+    struct stat st;
+    return stat(path.c_str(), &st) == 0;
+}
+
+[[noreturn]] inline void abort_wait(const std::string &why, const std::string &path) {
+    std::cerr << "[pipe_io] giving up waiting for " << path << ": " << why << "\n";
+    std::exit(3);
+}
+
+inline void exit_if_orphaned(const std::string &path) {
+    if (getppid() != parent_at_start) abort_wait("parent process exited", path);
+}
+
+inline double pipe_timeout_s() {
+    const char *e = std::getenv("ENCFORMER_PIPE_TIMEOUT_S");
+    double v = (e && *e) ? std::atof(e) : 600.0;
+    return v > 0 ? v : 600.0;
+}
+
+inline void wait_for_file(const std::string &path, useconds_t poll_us = 10000) {
+    const auto deadline = std::chrono::steady_clock::now() +
+                          std::chrono::duration<double>(pipe_timeout_s());
+    while (!file_present(path)) {
+        exit_if_orphaned(path);
+        if (std::chrono::steady_clock::now() > deadline) abort_wait("timeout", path);
+        usleep(poll_us);
+    }
+}
+
+}

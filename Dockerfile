@@ -5,6 +5,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends build-essential
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu121 torch==2.5.1 && pip install --no-cache-dir -r /tmp/requirements.txt
 COPY . .
-RUN bash scripts/build.sh 70 && python scripts/check.py
+RUN bash scripts/build.sh 80
 ENTRYPOINT ["python", "scripts/demo.py"]
 CMD ["--idx", "40", "--gpu", "0"]

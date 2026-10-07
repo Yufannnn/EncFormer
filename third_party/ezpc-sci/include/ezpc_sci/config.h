@@ -1,4 +1,3 @@
-// config.h — Compile-time and runtime configuration for EzPC/SCI protocols.
 #pragma once
 
 #include <cstdint>
@@ -7,9 +6,9 @@
 namespace ezpc_sci {
 
 struct ProtocolConfig {
-    int ring_bits;      // Ring modulus = 2^ring_bits
-    int scale_bits;     // Fixed-point scale = 2^scale_bits
-    double threshold;   // GELU clipping threshold
+    int ring_bits;
+    int scale_bits;
+    double threshold;
 
     int64_t ring_mod()  const { return 1LL << ring_bits; }
     int64_t ring_half() const { return 1LL << (ring_bits - 1); }
@@ -34,4 +33,4 @@ inline ProtocolConfig default_config() {
     };
 }
 
-} // namespace ezpc_sci
+}

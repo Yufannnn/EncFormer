@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 
 @dataclass
 class ModelConfig:
+
     name: str
     m: int
     d_model: int
@@ -17,17 +18,14 @@ class ModelConfig:
 
     @property
     def d_h(self) -> int:
-
         return self.d_model // self.H
 
     @property
     def C(self) -> int:
-
         return self.nslots // self.m
 
     @property
     def d1(self) -> int:
-
         return 6 * self.C
 
 
@@ -70,8 +68,9 @@ _CONFIGS = {
 
 
 def get_config(name: str) -> ModelConfig:
-
     cfg = _CONFIGS.get(name)
     if cfg is None:
-        raise ValueError(f"Unknown model config {name!r}. Available: {list(_CONFIGS.keys())}")
+        raise ValueError(
+            f"Unknown model config {name!r}. Available: {list(_CONFIGS.keys())}"
+        )
     return cfg

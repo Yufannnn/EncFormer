@@ -10,6 +10,6 @@
   ],
   "access_right": "open",
   "license": "mit",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "keywords": ["EncFormer", "homomorphic encryption", "secure multi-party computation", "private Transformer inference", "CKKS"]
 }

@@ -29,6 +29,9 @@ SOFTWARE.
 // be found in OT/kkot.h
 
 #include "OT/np.h"
+#include <stdexcept>
+#include <string>
+#include <vector>
 #include "OT/ot-utils.h"
 #include "OT/ot.h"
 #include "OT/split-utils.h"
@@ -72,6 +75,96 @@ public:
   bool precomp_masks = false;
   uint8_t *extended_r = nullptr;
   IO *io = nullptr;
+
+  bool ef_pool_on = false;
+  bool ef_filling = false;
+  std::vector<block256> ef_pool_rows;
+  std::vector<uint8_t> ef_pool_r;
+  size_t ef_pool_pos = 0;
+  uint64_t ef_ot_count = 0;
+  size_t ef_pool_left() const { return ef_pool_rows.size() - ef_pool_pos; }
+  void ef_pool_clear() {
+    std::vector<block256>().swap(ef_pool_rows);
+    std::vector<uint8_t>().swap(ef_pool_r);
+    ef_pool_pos = 0;
+  }
+  void ef_pool_fill(int64_t count) {
+    if (ef_pool_pos > 0) {
+      ef_pool_rows.erase(ef_pool_rows.begin(), ef_pool_rows.begin() + ef_pool_pos);
+      if (!ef_pool_r.empty()) ef_pool_r.erase(ef_pool_r.begin(), ef_pool_r.begin() + ef_pool_pos);
+      ef_pool_pos = 0;
+    }
+    bool was_on = ef_pool_on;
+    ef_pool_on = false;
+    ef_filling = true;
+    const int64_t chunk = int64_t(1) << 22;
+    for (int64_t done = 0; done < count; done += chunk) {
+      int c = (int)std::min<int64_t>(chunk, count - done);
+      if (party == ALICE) {
+        send_pre(c);
+        ef_pool_rows.insert(ef_pool_rows.end(), qT, qT + c);
+        delete[] qT;
+        qT = nullptr;
+      } else {
+        std::vector<uint8_t> r(c);
+        prg.random_data(r.data(), c); for (int j = 0; j < c; j++) r[j] &= (uint8_t)(N - 1);
+        recv_pre((uint8_t *)r.data(), c);
+        ef_pool_rows.insert(ef_pool_rows.end(), tT, tT + c);
+        ef_pool_r.insert(ef_pool_r.end(), r.begin(), r.end());
+        delete[] tT;
+        tT = nullptr;
+      }
+    }
+    ef_filling = false;
+    ef_pool_on = was_on;
+  }
+  static void ef_pack(const uint8_t *v, int n, int bits, std::vector<uint8_t> &out) {
+    out.assign(((size_t)n * bits + 7) / 8, 0);
+    size_t pos = 0;
+    for (int i = 0; i < n; i++)
+      for (int b = 0; b < bits; b++, pos++)
+        if ((v[i] >> b) & 1) out[pos >> 3] |= (uint8_t)(1u << (pos & 7));
+  }
+  static void ef_unpack(const uint8_t *in, int n, int bits, uint8_t *v) {
+    size_t pos = 0;
+    for (int i = 0; i < n; i++) {
+      uint8_t x = 0;
+      for (int b = 0; b < bits; b++, pos++)
+        if ((in[pos >> 3] >> (pos & 7)) & 1) x |= (uint8_t)(1u << b);
+      v[i] = x;
+    }
+  }
+  int ef_choice_bits() const { int b = 0; while ((1 << b) < N) b++; return b; }
+  void ef_send_from_pool(int length) {
+    if (ef_pool_left() < (size_t)length)
+      throw std::runtime_error("EncFormer OT pool exhausted (sender): need " + std::to_string(length) +
+                               ", left " + std::to_string(ef_pool_left()));
+    int bits = ef_choice_bits();
+    std::vector<uint8_t> packed(((size_t)length * bits + 7) / 8), e(length);
+    io->recv_data(packed.data(), (int)packed.size());
+    ef_unpack(packed.data(), length, bits, e.data());
+    qT = new (std::align_val_t(32)) block256[length];
+    if (!precomp_masks) precompute_masks();
+    for (int j = 0; j < length; j++)
+      qT[j] = xorBlocks(ef_pool_rows[ef_pool_pos + j], c_AND_s[e[j]]);
+    ef_pool_pos += length;
+    ef_ot_count += length;
+  }
+  void ef_recv_from_pool(const uint8_t *r, int length) {
+    if (ef_pool_left() < (size_t)length)
+      throw std::runtime_error("EncFormer OT pool exhausted (receiver): need " + std::to_string(length) +
+                               ", left " + std::to_string(ef_pool_left()));
+    int bits = ef_choice_bits();
+    std::vector<uint8_t> e(length), packed;
+    for (int j = 0; j < length; j++) e[j] = (uint8_t)((r[j] ^ ef_pool_r[ef_pool_pos + j]) & (N - 1));
+    ef_pack(e.data(), length, bits, packed);
+    io->send_data(packed.data(), (int)packed.size());
+    io->ef_derand_bytes += packed.size();
+    tT = new (std::align_val_t(32)) block256[length];
+    std::copy(ef_pool_rows.begin() + ef_pool_pos, ef_pool_rows.begin() + ef_pool_pos + length, tT);
+    ef_pool_pos += length;
+    ef_ot_count += length;
+  }
 
   SplitKKOT(int party, IO *io, int N) {
     assert(party == ALICE || party == BOB);
@@ -251,6 +344,12 @@ public:
   }
 
   void send_pre(int length) {
+    auto ef_t0 = std::chrono::steady_clock::now();
+    if (ef_pool_on) {
+      ef_send_from_pool(length);
+      return;
+    }
+    if (!ef_filling) ef_ot_count += length;
     int old_block_size = this->block_size;
     this->block_size =
         std::min(old_block_size, int(ceil(length / 256.0)) * 256);
@@ -274,9 +373,16 @@ public:
                 block_size);
     }
     this->block_size = old_block_size;
+    io->ext_seconds += std::chrono::duration<double>(std::chrono::steady_clock::now() - ef_t0).count();
   }
 
   void recv_pre(const uint8_t *r, int length) {
+    auto ef_t0 = std::chrono::steady_clock::now();
+    if (ef_pool_on) {
+      ef_recv_from_pool((const uint8_t *)r, length);
+      return;
+    }
+    if (!ef_filling) ef_ot_count += length;
     int old_block_size = this->block_size;
     this->block_size =
         std::min(old_block_size, int(ceil(length / 256.0)) * 256);
@@ -305,6 +411,7 @@ public:
         xorBlocks_arr(tmp, t + (i * block_size / 256), tmp, block_size / 256);
         xorBlocks_arr(tmp, d + (i * block_size / 256), tmp, block_size / 256);
         io->send_data(tmp, block_size / 8);
+        io->ext_bytes += block_size / 8;
       }
       sse_trans((uint8_t *)(tT + j * block_size), (uint8_t *)t, 256,
                 block_size);
@@ -314,6 +421,9 @@ public:
     delete[] r2;
 
     this->block_size = old_block_size;
+    io->ext_ots += old_length;
+    { int ef_lg = 0; while ((1 << ef_lg) < N) ef_lg++; io->ext_choice_bits += uint64_t(old_length) * ef_lg; }
+    io->ext_seconds += std::chrono::duration<double>(std::chrono::steady_clock::now() - ef_t0).count();
   }
 
   void got_send_offline(int length) {

@@ -89,10 +89,8 @@ class BatchMethodState:
     @staticmethod
     def _reshape_row_den(arr: np.ndarray, rows: int, *, head_index: int | None = None) -> Optional[np.ndarray]:
         a = np.asarray(arr, dtype=np.float64)
-
         if a.ndim == 4 and a.shape[0] == 1:
             a = a[0]
-
         if a.ndim >= 2 and head_index is not None and a.shape[0] < rows and a.shape[1] >= rows:
             if a.shape[0] > head_index:
                 a = a[head_index]

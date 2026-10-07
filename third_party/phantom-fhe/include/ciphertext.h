@@ -287,8 +287,9 @@ public:
         auto &first_coeff_modulus = first_parms.coeff_modulus();
         auto first_coeff_mod_size = first_coeff_modulus.size();
 
-        if (first_coeff_mod_size != coeff_modulus_size_) {
-            throw std::runtime_error("Only support ciphertext without modulus switching.");
+        if (coeff_modulus_size_ > first_coeff_mod_size ||
+            context.get_context_data(chain_index_).parms().coeff_modulus().size() != coeff_modulus_size_) {
+            throw std::runtime_error("load_symmetric: limb count does not match the ciphertext's level");
         }
 
         auto base_rns = context.gpu_rns_tables().modulus();

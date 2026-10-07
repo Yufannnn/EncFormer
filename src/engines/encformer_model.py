@@ -23,7 +23,6 @@ def _quantize_torch(x: torch.Tensor) -> torch.Tensor:
 
 
 def _approx_gelu_torch(x: torch.Tensor) -> torch.Tensor:
-
     xq = _quantize_torch(x)
     x2 = xq * xq
     x4 = x2 * x2
@@ -54,6 +53,7 @@ def _approx_gelu_torch(x: torch.Tensor) -> torch.Tensor:
 
 
 class BPMaxAttention(nn.Module):
+
     def __init__(
         self,
         hidden_size: int,
@@ -72,7 +72,6 @@ class BPMaxAttention(nn.Module):
         self.eps = eps
         self.seq_len = seq_len
         self.momentum = momentum
-
         self.exact_nonlinear = False
 
         self.query = nn.Linear(hidden_size, hidden_size)
@@ -114,10 +113,8 @@ class BPMaxAttention(nn.Module):
             if self.training:
                 den_batch_max = den.max(dim=0, keepdim=True).values
                 self.num_batches_tracked += 1
-
                 with torch.no_grad():
                     self.running_denominator[:, :, :S, :] = den_batch_max
-
                 attn_probs = pw / (den_batch_max + self.eps)
             elif use_running_stats:
                 rd_slice = self.running_denominator[:, :, :S, :]
@@ -131,6 +128,7 @@ class BPMaxAttention(nn.Module):
 
 
 class BatchLayerNorm(nn.Module):
+
     def __init__(
         self,
         normalized_shape: int,
@@ -144,7 +142,6 @@ class BatchLayerNorm(nn.Module):
         self.l = l
         self.eps = eps
         self.momentum = momentum
-
         self.exact_nonlinear = False
         self.weight = nn.Parameter(torch.ones(normalized_shape))
         self.bias = nn.Parameter(torch.zeros(normalized_shape))
@@ -155,7 +152,6 @@ class BatchLayerNorm(nn.Module):
         self.register_buffer("num_batches_tracked", torch.tensor(0, dtype=torch.long))
 
     def forward(self, x: torch.Tensor, use_running_stats: bool = False) -> torch.Tensor:
-
         mean = x.mean(dim=-1, keepdim=True)
         xc = x - mean
         rms = torch.sqrt((xc * xc).mean(dim=-1, keepdim=True) + self.eps)
@@ -168,7 +164,6 @@ class BatchLayerNorm(nn.Module):
             self.num_batches_tracked += 1
             with torch.no_grad():
                 self.running_denominator[:, :S, :] = rms_batch_max
-
             y = xc / (rms_batch_max + self.eps)
         elif use_running_stats:
             rd_slice = self.running_denominator[:, :S, :]
@@ -180,6 +175,7 @@ class BatchLayerNorm(nn.Module):
 
 
 class EncFormerBertLayer(nn.Module):
+
     def __init__(
         self,
         hidden_size: int = 768,
@@ -197,7 +193,6 @@ class EncFormerBertLayer(nn.Module):
         self.ff1 = nn.Linear(hidden_size, intermediate_size)
         self.ff2 = nn.Linear(intermediate_size, hidden_size)
         self.ln2 = BatchLayerNorm(hidden_size, seq_len, l=ln_l)
-
         self.exact_nonlinear = False
 
     def forward(
@@ -218,13 +213,13 @@ class EncFormerBertLayer(nn.Module):
             ff_act = F.gelu(ff_hidden)
         ff_out = self.ff2(ff_act)
         out = self.ln2(x + ff_out, use_running_stats=use_running_stats)
-
         self._last_attn_scores = self.attention._last_scores
         self._last_hidden = out
         return out
 
 
 class EncFormerBertForSequenceClassification(nn.Module):
+
     def __init__(
         self,
         num_labels: int = 2,
@@ -251,20 +246,13 @@ class EncFormerBertForSequenceClassification(nn.Module):
         self.embedding_ln = nn.LayerNorm(hidden_size)
         self.embedding_dropout = nn.Dropout(0.1)
 
-        self.layers = nn.ModuleList(
-            [
-                EncFormerBertLayer(
-                    hidden_size,
-                    num_heads,
-                    intermediate_size,
-                    seq_len,
-                    p=p,
-                    c=c,
-                    ln_l=ln_l,
-                )
-                for _ in range(num_layers)
-            ]
-        )
+        self.layers = nn.ModuleList([
+            EncFormerBertLayer(
+                hidden_size, num_heads, intermediate_size, seq_len,
+                p=p, c=c, ln_l=ln_l,
+            )
+            for _ in range(num_layers)
+        ])
 
         self.pooler = nn.Linear(hidden_size, hidden_size)
         self.classifier = nn.Linear(hidden_size, num_labels)
@@ -306,6 +294,7 @@ class EncFormerBertForSequenceClassification(nn.Module):
 
 
 class EncFormerGPT2Layer(nn.Module):
+
     def __init__(
         self,
         hidden_size: int = 768,
@@ -323,7 +312,6 @@ class EncFormerGPT2Layer(nn.Module):
         self.ln2 = BatchLayerNorm(hidden_size, seq_len, l=ln_l)
         self.ff1 = nn.Linear(hidden_size, intermediate_size)
         self.ff2 = nn.Linear(intermediate_size, hidden_size)
-
         self.exact_nonlinear = False
 
     def forward(
@@ -332,12 +320,10 @@ class EncFormerGPT2Layer(nn.Module):
         attention_mask: Optional[torch.Tensor] = None,
         use_running_stats: bool = False,
     ) -> torch.Tensor:
-
         normed = self.ln1(hidden_states, use_running_stats=use_running_stats)
         attn_out = self.attention(normed, attention_mask, use_running_stats=use_running_stats)
         attn_out = self.attn_output(attn_out)
         x = hidden_states + attn_out
-
         normed2 = self.ln2(x, use_running_stats=use_running_stats)
         ff_hidden = self.ff1(normed2)
         if self.exact_nonlinear:
@@ -346,7 +332,6 @@ class EncFormerGPT2Layer(nn.Module):
             import numpy as np
 
             from src.engines.mpc_gelu_secure import secure_gelu_piecewise_reference
-
             ff_np = ff_hidden.detach().cpu().numpy()
             gelu_np = secure_gelu_piecewise_reference(ff_np)
             ff_act = torch.tensor(gelu_np, dtype=ff_hidden.dtype, device=ff_hidden.device)
@@ -357,6 +342,7 @@ class EncFormerGPT2Layer(nn.Module):
 
 
 class EncFormerGPT2LM(nn.Module):
+
     def __init__(
         self,
         vocab_size: int = 50257,
@@ -379,20 +365,13 @@ class EncFormerGPT2LM(nn.Module):
         self.position_embeddings = nn.Embedding(max_position_embeddings, hidden_size)
         self.embedding_dropout = nn.Dropout(0.1)
 
-        self.layers = nn.ModuleList(
-            [
-                EncFormerGPT2Layer(
-                    hidden_size,
-                    num_heads,
-                    intermediate_size,
-                    seq_len,
-                    p=p,
-                    c=c,
-                    ln_l=ln_l,
-                )
-                for _ in range(num_layers)
-            ]
-        )
+        self.layers = nn.ModuleList([
+            EncFormerGPT2Layer(
+                hidden_size, num_heads, intermediate_size, seq_len,
+                p=p, c=c, ln_l=ln_l,
+            )
+            for _ in range(num_layers)
+        ])
 
         self.ln_f = BatchLayerNorm(hidden_size, seq_len, l=ln_l)
 
@@ -414,7 +393,6 @@ class EncFormerGPT2LM(nn.Module):
             torch.full((S, S), torch.finfo(hidden.dtype).min, device=hidden.device),
             diagonal=1,
         )
-
         causal_mask = causal_mask.unsqueeze(0).unsqueeze(0)
 
         if attention_mask is not None:
@@ -433,6 +411,7 @@ class EncFormerGPT2LM(nn.Module):
 
 
 class EncFormerGPT2ForSequenceClassification(nn.Module):
+
     def __init__(
         self,
         num_labels: int = 2,
@@ -457,20 +436,13 @@ class EncFormerGPT2ForSequenceClassification(nn.Module):
         self.position_embeddings = nn.Embedding(max_position_embeddings, hidden_size)
         self.embedding_dropout = nn.Dropout(0.1)
 
-        self.layers = nn.ModuleList(
-            [
-                EncFormerGPT2Layer(
-                    hidden_size,
-                    num_heads,
-                    intermediate_size,
-                    seq_len,
-                    p=p,
-                    c=c,
-                    ln_l=ln_l,
-                )
-                for _ in range(num_layers)
-            ]
-        )
+        self.layers = nn.ModuleList([
+            EncFormerGPT2Layer(
+                hidden_size, num_heads, intermediate_size, seq_len,
+                p=p, c=c, ln_l=ln_l,
+            )
+            for _ in range(num_layers)
+        ])
 
         self.ln_f = BatchLayerNorm(hidden_size, seq_len, l=ln_l)
 
@@ -488,14 +460,10 @@ class EncFormerGPT2ForSequenceClassification(nn.Module):
         hidden = self.word_embeddings(input_ids) + self.position_embeddings(position_ids)
         hidden = self.embedding_dropout(hidden)
 
-        causal_mask = (
-            torch.triu(
-                torch.full((S, S), torch.finfo(hidden.dtype).min, device=hidden.device),
-                diagonal=1,
-            )
-            .unsqueeze(0)
-            .unsqueeze(0)
-        )
+        causal_mask = torch.triu(
+            torch.full((S, S), torch.finfo(hidden.dtype).min, device=hidden.device),
+            diagonal=1,
+        ).unsqueeze(0).unsqueeze(0)
 
         if attention_mask is not None:
             pad_mask = attention_mask[:, None, None, :].to(hidden.dtype)
@@ -523,7 +491,6 @@ def load_from_gpt2_pretrained(
     model: EncFormerGPT2LM | EncFormerGPT2ForSequenceClassification,
     gpt2_name: str = "gpt2",
 ) -> None:
-
     from transformers import GPT2Model
 
     gpt2 = GPT2Model.from_pretrained(gpt2_name)
@@ -561,7 +528,6 @@ def load_from_gpt2_pretrained(
         if our_key in sd_model and gpt2_key in sd_gpt2:
             src = sd_gpt2[gpt2_key]
             dst_shape = sd_model[our_key].shape
-
             if src.shape != dst_shape and src.T.shape == dst_shape:
                 src = src.T
             if sd_model[our_key].shape == src.shape:
@@ -582,9 +548,8 @@ def load_from_gpt2_pretrained(
             w = sd_gpt2[fused_key]
             b = sd_gpt2[fused_bias_key]
             hs = w.shape[0]
-
-            wq, wk, wv = w[:, :hs], w[:, hs : 2 * hs], w[:, 2 * hs :]
-            bq, bk, bv = b[:hs], b[hs : 2 * hs], b[2 * hs :]
+            wq, wk, wv = w[:, :hs], w[:, hs:2*hs], w[:, 2*hs:]
+            bq, bk, bv = b[:hs], b[hs:2*hs], b[2*hs:]
 
             pfx = f"layers.{i}.attention"
             for name, tensor in [
@@ -600,7 +565,7 @@ def load_from_gpt2_pretrained(
                     loaded += 1
 
     model.load_state_dict(sd_model, strict=False)
-    print(f"[EncFormerModel] Loaded {loaded}/{len(mapping) + len(model.layers) * 6} weight tensors from {gpt2_name}")
+    print(f"[EncFormerModel] Loaded {loaded}/{len(mapping) + len(model.layers)*6} weight tensors from {gpt2_name}")
 
     if hasattr(model, "lm_head"):
         model.lm_head.weight = model.word_embeddings.weight
@@ -610,7 +575,6 @@ def load_from_bert_pretrained(
     model: EncFormerBertForSequenceClassification,
     bert_name: str = "bert-base-uncased",
 ) -> None:
-
     from transformers import BertModel
 
     bert = BertModel.from_pretrained(bert_name)
@@ -672,17 +636,16 @@ def load_from_bert_pretrained(
 
 
 def set_exact_nonlinear(model: nn.Module, enabled: bool = True) -> int:
-
     n = 0
     for mod in model.modules():
-        if isinstance(mod, (BPMaxAttention, BatchLayerNorm, EncFormerBertLayer, EncFormerGPT2Layer)):
+        if isinstance(mod, (BPMaxAttention, BatchLayerNorm,
+                            EncFormerBertLayer, EncFormerGPT2Layer)):
             mod.exact_nonlinear = enabled
             n += 1
     return n
 
 
 def export_running_denominators(model: nn.Module) -> Dict[str, np.ndarray]:
-
     denoms = {}
     for i, layer in enumerate(model.layers):
         rd_attn = layer.attention.running_denominator.detach().cpu().numpy()
@@ -703,19 +666,21 @@ def infer_model_config_name_from_metadata(
     num_layers: int,
     seq_len: int,
 ) -> str | None:
-
     from src.models.model_config import get_config
 
     candidates = ("gpt2-base",) if model_type == "gpt2" else ("bert-base", "bert-large")
     for name in candidates:
         cfg = get_config(name)
-        if cfg.d_model == hidden_size and cfg.num_layers == num_layers and cfg.m == seq_len:
+        if (
+            cfg.d_model == hidden_size
+            and cfg.num_layers == num_layers
+            and cfg.m == seq_len
+        ):
             return name
     return None
 
 
 def infer_model_config_name(model: nn.Module) -> str | None:
-
     model_type = "gpt2" if isinstance(model, (EncFormerGPT2LM, EncFormerGPT2ForSequenceClassification)) else "bert"
     return infer_model_config_name_from_metadata(
         model_type=model_type,
@@ -730,14 +695,11 @@ def save_checkpoint(
     output_dir: str,
     task: str = "",
 ) -> None:
-
     import os
-
     os.makedirs(output_dir, exist_ok=True)
     torch.save(model.state_dict(), os.path.join(output_dir, "model.pt"))
     denoms = export_running_denominators(model)
     np.savez(os.path.join(output_dir, "running_denominators.npz"), **denoms)
-
     is_gpt2_lm = isinstance(model, EncFormerGPT2LM)
     is_gpt2_cls = isinstance(model, EncFormerGPT2ForSequenceClassification)
     if is_gpt2_cls:
@@ -758,7 +720,6 @@ def save_checkpoint(
     if hasattr(model, "num_labels"):
         config["num_labels"] = model.num_labels
     import json
-
     with open(os.path.join(output_dir, "config.json"), "w") as f:
         json.dump(config, f, indent=2)
     print(f"[Checkpoint] Saved to {output_dir}")
@@ -768,10 +729,8 @@ def load_checkpoint(
     checkpoint_dir: str,
     device: str = "cpu",
 ) -> Tuple[nn.Module, Dict[str, np.ndarray]]:
-
     import json
     import os
-
     with open(os.path.join(checkpoint_dir, "config.json")) as f:
         config = json.load(f)
 
@@ -796,13 +755,10 @@ def load_checkpoint(
             num_layers=config["num_layers"],
             seq_len=config["seq_len"],
         )
-    model.load_state_dict(
-        torch.load(
-            os.path.join(checkpoint_dir, "model.pt"),
-            map_location=device,
-            weights_only=True,
-        )
-    )
+    model.load_state_dict(torch.load(
+        os.path.join(checkpoint_dir, "model.pt"),
+        map_location=device, weights_only=True,
+    ))
     model.eval()
 
     denoms = {}
@@ -819,14 +775,12 @@ def extract_layer_weights(
     model: nn.Module,
     layer_idx: int = 0,
 ) -> Dict[str, np.ndarray]:
-
     layer = model.layers[layer_idx]
 
     def to_np(t: torch.Tensor) -> np.ndarray:
         return t.detach().cpu().numpy().astype(np.float64)
 
     weights = {}
-
     weights["WQ"] = to_np(layer.attention.query.weight.T)
     weights["WK"] = to_np(layer.attention.key.weight.T)
     weights["WV"] = to_np(layer.attention.value.weight.T)

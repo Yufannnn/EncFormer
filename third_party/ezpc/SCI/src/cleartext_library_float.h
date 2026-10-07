@@ -22,6 +22,7 @@ SOFTWARE.
 #ifndef LIBRARY_CLEARTEXT_FLOAT_H__
 #define LIBRARY_CLEARTEXT_FLOAT_H__
 
+#include <cstdint>
 #include <vector>
 #include <math.h>
 #include <cstdlib>

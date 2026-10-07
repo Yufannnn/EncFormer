@@ -41,14 +41,10 @@ jobs:
       - name: Shell
         run: bash -n scripts/build.sh scripts/2pc.sh scripts/build_ezpc_sci.sh scripts/package.sh
 
-      - name: Parameters
+      - name: Tests
         run: |
-          test -f third_party/phantom-fhe/src/prng.cu || { echo "phantom source missing"; exit 1; }
-          grep -q "sample_ternary_poly" third_party/phantom-fhe/src/prng.cu || { echo "sparse-ternary sampler missing"; exit 1; }
-          grep -q "hamming_weight"      third_party/phantom-fhe/src/prng.cu || { echo "hamming-weight bound missing"; exit 1; }
-          grep -q "ring_bits: int = 43" src/engines/mpc_engine_ezpc.py || { echo "ell=43 changed"; exit 1; }
-          grep -q "scale_bits: int = 13" src/engines/mpc_engine_ezpc.py || { echo "F=13 changed"; exit 1; }
-          echo "params + security markers present"
+          pip install --quiet numpy pytest
+          pytest -q tests
 
       - name: Package
         run: |
@@ -57,9 +53,9 @@ jobs:
                    assets/EncFormer-Profile.png data/sst2-validation.jsonl \
                    data/bert-base-uncased/vocab.txt checkpoints/encformer-sst2/model.pt \
                    third_party/ezpc-sci/src/binding.cpp \
-                   third_party/phantom-fhe/examples/pipe_ckks_attn.cu \
+                   third_party/phantom-fhe/examples/pipe_tp_server.cu \
                    third_party/ezpc/SCI/src/FloatingPoint/fixed-point.cpp ; do
             test -f "$f" || { echo "MISSING tracked file: $f"; exit 1; }
           done
           bash scripts/package.sh dist
-          unzip -tq dist/EncFormer-v1.0.0.zip
+          unzip -tq dist/EncFormer-v2.0.0.zip

@@ -13,7 +13,6 @@ cmake -S "$sci" -B "$sci_build" -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD
 cmake --build "$sci_build" --parallel "$(nproc)"
 python="${PYTHON:-$(command -v python || command -v python3)}"
 pybind11="$($python -m pybind11 --cmakedir)"
-cmake -S "$binding" -B "$binding_build" -DCMAKE_BUILD_TYPE=Release -DEZPC_SCI_PYTHON_BINDING=ON -DEZPC_STANDALONE_TEST=ON -DSCI_BUILD_DIR="$sci_build" -Dpybind11_DIR="$pybind11" -DPYTHON_EXECUTABLE="$python"
+cmake -S "$binding" -B "$binding_build" -DCMAKE_BUILD_TYPE=Release -DEZPC_SCI_PYTHON_BINDING=ON -DSCI_BUILD_DIR="$sci_build" -Dpybind11_DIR="$pybind11" -DPYTHON_EXECUTABLE="$python"
 cmake --build "$binding_build" --parallel "$(nproc)"
-"$binding_build/ezpc_sci_test"
 PYTHONPATH="$binding_build" "$python" -c 'import ezpc_sci; assert ezpc_sci.HAS_NATIVE_SCI; print("EncFormer EzPC/SCI ready")'

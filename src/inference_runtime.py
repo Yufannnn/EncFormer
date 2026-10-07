@@ -9,7 +9,6 @@ def prepare_layer_running_denoms(
     running_denoms: dict[str, np.ndarray] | None,
     layer_idx: int,
 ) -> dict[str, np.ndarray]:
-
     prepared: dict[str, np.ndarray] = {}
     if running_denoms is None:
         return prepared
@@ -40,13 +39,11 @@ def inject_layer_running_denoms(
     mpc_backend: Any,
     prepared_denoms: dict[str, np.ndarray] | None,
 ) -> None:
-
     keys = (
         "bpmax_running_denominator",
         "ln1_running_denominator",
         "ln2_running_denominator",
     )
     prepared = prepared_denoms or {}
-
     to_set = {k: prepared.get(k) for k in keys}
     mpc_backend.set_running_denominators(to_set)

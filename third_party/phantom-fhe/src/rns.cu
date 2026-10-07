@@ -1090,13 +1090,17 @@ namespace phantom {
             uint64_t q_last_inv = inv_q_last_mod_q[twr];
             uint64_t q_last_inv_shoup = inv_q_last_mod_q_shoup[twr];
 
-            // uint64_t q_last_value = base_q[next_base_q_size].value();
+            const uint64_t q_last_value = base_q[next_base_q_size].value();
+            const uint64_t half = q_last_value >> 1;
             uint64_t c_last_coeff = src[(tid % poly_degree) + next_base_q_size * poly_degree];
+            c_last_coeff = c_last_coeff + half;
+            if (c_last_coeff >= q_last_value) c_last_coeff -= q_last_value;
 
             uint64_t temp;
 
-            // q_last^(-1) * (ci[j] - (ci[last] mod qj)) mod qj
             temp = barrett_reduce_uint64_uint64(c_last_coeff, mod.value(), mod.const_ratio()[1]);
+            temp = sub_uint64_uint64_mod(temp, barrett_reduce_uint64_uint64(half, mod.value(), mod.const_ratio()[1]),
+                                         mod.value());
             temp = sub_uint64_uint64_mod(src[tid], temp, mod.value());
 
             // q_last^(-1) * (ci[j] + (-ci[last] mod qlast)) mod qj
@@ -1131,10 +1135,15 @@ namespace phantom {
              tid += blockDim.x * gridDim.x) {
             size_t twr = tid / poly_degree;
             DModulus mod = base_q[twr];
+            const uint64_t q_last_value = base_q[next_base_q_size].value();
+            const uint64_t half = q_last_value >> 1;
             uint64_t c_last_coeff = src[(tid % poly_degree) + next_base_q_size * poly_degree];
+            c_last_coeff = c_last_coeff + half;
+            if (c_last_coeff >= q_last_value) c_last_coeff -= q_last_value;
 
-            // ci[last] mod qj
-            dst[tid] = barrett_reduce_uint64_uint64(c_last_coeff, mod.value(), mod.const_ratio()[1]);
+            uint64_t temp = barrett_reduce_uint64_uint64(c_last_coeff, mod.value(), mod.const_ratio()[1]);
+            dst[tid] = sub_uint64_uint64_mod(temp, barrett_reduce_uint64_uint64(half, mod.value(), mod.const_ratio()[1]),
+                                             mod.value());
         }
     }
 

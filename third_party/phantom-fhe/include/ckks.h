@@ -105,6 +105,9 @@ public:
         return destination;
     }
 
+    void encode_device(const PhantomContext &context, const cuDoubleComplex *d_values, size_t n, double scale,
+                       PhantomPlaintext &destination, size_t chain_index, int max_coeff_bit_count);
+
     [[nodiscard]] inline std::size_t slot_count() const noexcept {
         return slots_;
     }

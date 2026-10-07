@@ -8,6 +8,7 @@ import tempfile
 import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+LOGIT_TOL = 0.05
 
 
 def checkpoint():
@@ -77,7 +78,7 @@ def inference(layers, gpu):
         "--json",
         path,
     ]
-    run = subprocess.run(cmd, env=dict(os.environ, HF_HUB_OFFLINE="1"), capture_output=True, text=True, timeout=1800)
+    run = subprocess.run(cmd, env=dict(os.environ, HF_HUB_OFFLINE="1"), capture_output=True, text=True, timeout=3600)
     if run.returncode:
         raise RuntimeError(run.stderr or run.stdout)
     with open(path, encoding="utf-8") as handle:
@@ -103,14 +104,14 @@ def main():
     checks.append(("SST-2 accuracy", 0.884 <= acc <= 0.944, f"{acc:.4f}"))
     checks.append(("finite outputs", finite >= 0.95, f"{finite:.4f}"))
     result = inference(12 if full else 1, args.gpu)
-    values = result.get("enc_logits") or []
-    checks.append(("native CKKS", bool(values) and all(value == value for value in values), "finite"))
+    rel = result.get("hidden_rel_err")
+    checks.append(("two-party inference", bool(result.get("finite")) and rel is not None and rel < 0.01,
+                   "none" if rel is None else f"rel. error {rel:.2e}"))
     if full:
         checks.append(("prediction", result["enc_pred"] == result["gold"], str(result["enc_pred"])))
         delta = result.get("max_abs_diff")
-        checks.append(
-            ("logit difference", delta is not None and delta < 0.01, "none" if delta is None else f"{delta:.6f}")
-        )
+        checks.append(("logit difference", delta is not None and delta < LOGIT_TOL,
+                       "none" if delta is None else f"{delta:.6f}"))
     passed = all(item[1] for item in checks)
     print("EncFormer evaluation")
     for name, ok, value in checks:

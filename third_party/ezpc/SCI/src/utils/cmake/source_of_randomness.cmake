@@ -25,3 +25,5 @@ IF(${USE_RANDOM_DEVICE})
 ELSE(${USE_RANDOM_DEVICE})
 	message("${Green}-- Source of Randomness: rdseed${ColourReset}")
 ENDIF(${USE_RANDOM_DEVICE})
+
+set(USE_RANDOM_DEVICE ON)
