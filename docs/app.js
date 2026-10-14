@@ -264,7 +264,10 @@
   }
   $('visitorRefresh').addEventListener('click',()=>config.visitorApi?refreshLive(false):toast('No visitor endpoint configured; see website/DEPLOY.md'));
   async function initializeVisitors(){
-    await loadCoords();drawVisitors(data.sampleVisits,true); // explicitly labeled sample, never misrepresented as a real count
+    // Show the labelled preview immediately, even while the country lookup loads.
+    drawVisitors(data.sampleVisits,true);
+    await loadCoords();
+    if(showingSample)drawVisitors(data.sampleVisits,true);
     if(config.visitorApi)refreshLive(true);
   }
   initializeVisitors();

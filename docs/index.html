@@ -15,11 +15,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20261014-personal" />
+  <link rel="stylesheet" href="styles.css?v=20261014-atlas2" />
   <script defer src="config.js?v=20261014-trace2"></script>
   <script defer src="data.js?v=20261014-trace2"></script>
   <script defer src="trace.js?v=20261014-graph1"></script>
-  <script defer src="app.js?v=20261014-graph1"></script>
+  <script defer src="app.js?v=20261014-atlas2"></script>
   <title>EncFormer — Private inference, re-engineered.</title>
 </head>
 <body>
@@ -36,6 +36,7 @@
       <a href="#architecture">Architecture</a>
       <a href="#algorithms">Algorithms</a>
       <a href="#benchmarks">Benchmarks</a>
+      <a href="#visitors">Atlas</a>
       <a href="acknowledgements.html">Acknowledgements</a>
     </nav>
     <div class="nav-actions">
@@ -46,7 +47,7 @@
     </div>
   </header>
   <nav id="mobileNav" class="mobile-nav" aria-label="Mobile navigation" hidden>
-    <a href="#inferenceTrace">Trace</a><a href="#concept">Concept</a><a href="#architecture">Architecture</a><a href="#algorithms">Algorithms</a><a href="#benchmarks">Benchmarks</a><a href="#resources">Resources</a><a href="acknowledgements.html">Acknowledgements</a>
+    <a href="#inferenceTrace">Trace</a><a href="#concept">Concept</a><a href="#architecture">Architecture</a><a href="#algorithms">Algorithms</a><a href="#benchmarks">Benchmarks</a><a href="#resources">Resources</a><a href="#visitors">Visitor atlas</a><a href="acknowledgements.html">Acknowledgements</a>
   </nav>
 
   <main id="main">
@@ -175,8 +176,8 @@
 }</pre><button type="button" id="copyCitation" class="copy-button" aria-label="Copy BibTeX citation">COPY BIBTEX ↗</button></div></div></section>
     <aside id="visitors" class="section-shell atlas-footer" aria-label="Visitor atlas">
       <div class="atlas-footer-inner">
-        <div class="world-map atlas-map" id="worldMap" aria-label="Country-level visitor map"><img src="assets/world.svg" alt="World country outlines" loading="lazy" /><svg id="mapPoints" viewBox="0 0 1100 520" aria-hidden="true"></svg></div>
-        <div class="atlas-copy"><div class="atlas-heading"><h2>A little visitor atlas.</h2><span id="visitorMode" class="visitor-mode">SAMPLE · NOT LIVE</span></div>
+        <div class="world-map atlas-map" id="worldMap" aria-label="Country-level visitor map"><img src="assets/world.svg?v=20261014-atlas2" alt="World country outlines" loading="lazy" /><svg id="mapPoints" viewBox="0 0 1100 520" aria-hidden="true"></svg></div>
+        <div class="atlas-copy"><div class="atlas-heading"><h2>Visitor atlas</h2><span id="visitorMode" class="visitor-mode">SAMPLE · NOT LIVE</span></div>
           <div class="atlas-totals"><span><strong id="visitorTotal">—</strong> visits</span><span><strong id="visitorToday">—</strong> today</span><span><strong id="visitorCountries">—</strong> countries</span></div>
           <p id="visitorTotalCaption">Illustrative numbers · not visits</p><p id="yourLocation">Geography is illustrative</p>
           <div class="atlas-actions"><button type="button" id="visitorDemo" class="subtle-action">Hide sample data</button><button type="button" id="visitorRefresh" class="subtle-action">↻ Refresh</button></div>
@@ -184,7 +185,7 @@
       </div>
     </aside>
   </main>
-  <footer class="footer"><div class="footer-top"><div class="footer-brand"><span class="logo-mini"><img src="assets/EncFormer.png" alt="" width="40" height="40" /></span><strong>EncFormer</strong><span>SECURE INFERENCE / 2026</span></div><div class="footer-links"><a href="#architecture">System</a><a href="#algorithms">Algorithms</a><a href="#benchmarks">Results</a><a href="acknowledgements.html">Acknowledgements</a><a href="https://yufannnn.github.io/" target="_blank" rel="noopener noreferrer">Personal page ↗</a><a href="https://github.com/Yufannnn/EncFormer" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div></div><div class="footer-bottom"><span>© 2026 EncFormer authors · NUS & A*STAR</span><span>Educational illustrations, not a live cryptographic service.</span><button type="button" id="shareSite" class="share-button">SHARE THIS PROJECT ↗</button></div></footer>
+  <footer class="footer"><div class="footer-top"><div class="footer-brand"><span class="logo-mini"><img src="assets/EncFormer.png" alt="" width="40" height="40" /></span><strong>EncFormer</strong><span>SECURE INFERENCE / 2026</span></div><div class="footer-links"><a href="#architecture">System</a><a href="#algorithms">Algorithms</a><a href="#benchmarks">Results</a><a href="acknowledgements.html">Acknowledgements</a><a href="#visitors">Visitor atlas</a><a href="https://yufannnn.github.io/" target="_blank" rel="noopener noreferrer">Personal page ↗</a><a href="https://github.com/Yufannnn/EncFormer" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div></div><div class="footer-bottom"><span>© 2026 EncFormer authors · NUS & A*STAR</span><span>Educational illustrations, not a live cryptographic service.</span><button type="button" id="shareSite" class="share-button">SHARE THIS PROJECT ↗</button></div></footer>
 
   <div id="commandDialog" class="command-overlay" role="dialog" aria-modal="true" aria-label="Quick navigation" hidden><div class="command-box"><div class="command-search"><span>⌕</span><input type="text" id="commandInput" placeholder="Where would you like to go?" autocomplete="off" /><kbd>ESC</kbd></div><div class="command-results" id="commandResults"></div><div class="command-footer">⌘ / CTRL + K TO OPEN <span>↑ ↓ navigate · ↵ select</span></div></div></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
