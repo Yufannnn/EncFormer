@@ -7,6 +7,10 @@
 
 Official implementation of **EncFormer: Secure and Efficient Transformer Inference over Encrypted Data**, IEEE Transactions on Dependable and Secure Computing.
 
+## Interactive demo
+
+Explore the [EncFormer research website](https://yufannnn.github.io/EncFormer/) for the execution trace, algorithm visualizations, reported benchmarks, and acknowledgements.
+
 ## Requirements
 
 - Ubuntu 22.04

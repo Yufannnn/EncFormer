@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#080f1c" />
+  <meta name="description" content="EncFormer — an interactive, research-grounded exploration of secure and efficient Transformer inference over encrypted data. IEEE TDSC 2026." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="EncFormer · Secure Transformer Inference" />
+  <meta property="og:description" content="Explore how Stage Compatible Patterns, complex CKKS–MPC conversion and boundary co-design accelerate private Transformer inference." />
+  <meta property="og:image" content="https://yufannnn.github.io/EncFormer/assets/social-preview.png" />
+  <meta property="og:url" content="https://yufannnn.github.io/EncFormer/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" type="image/png" href="assets/EncFormer.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=20261014-graph1" />
+  <script defer src="config.js?v=20261014-trace2"></script>
+  <script defer src="data.js?v=20261014-trace2"></script>
+  <script defer src="trace.js?v=20261014-graph1"></script>
+  <script defer src="app.js?v=20261014-graph1"></script>
+  <title>EncFormer — Private inference, re-engineered.</title>
+</head>
+<body>
+  <div id="readProgress" aria-hidden="true"></div>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="topbar" id="top">
+    <a class="brand" href="#top" aria-label="EncFormer — back to top">
+      <span class="brand-mark" aria-hidden="true"><img src="assets/EncFormer.png" alt="" width="48" height="48" /></span>
+      <span class="brand-name">Enc<span>Former</span><small>RESEARCH / 2026</small></span>
+    </a>
+    <nav class="desktop-nav" aria-label="Primary navigation">
+      <a href="#inferenceTrace">Trace</a>
+      <a href="#concept">Concept</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#algorithms">Algorithms</a>
+      <a href="#benchmarks">Benchmarks</a>
+      <a href="acknowledgements.html">Acknowledgements</a>
+    </nav>
+    <div class="nav-actions">
+      <button id="themeToggle" class="icon-button" type="button" aria-label="Toggle light and dark theme" title="Toggle theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 15.1A8.2 8.2 0 0 1 8.9 4 8.3 8.3 0 1 0 20 15.1Z"/></svg></button>
+      <button id="searchToggle" class="icon-button search-action" type="button" title="Open quick navigation (⌘/Ctrl K)" aria-label="Open quick navigation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10.7" cy="10.7" r="6.4"/><path d="m15.7 15.7 5 5"/></svg></button>
+      <a href="https://github.com/Yufannnn/EncFormer" target="_blank" rel="noopener noreferrer" class="header-github">GitHub <span aria-hidden="true">↗</span></a>
+      <button id="menuToggle" class="icon-button menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+    </div>
+  </header>
+  <nav id="mobileNav" class="mobile-nav" aria-label="Mobile navigation" hidden>
+    <a href="#inferenceTrace">Trace</a><a href="#concept">Concept</a><a href="#architecture">Architecture</a><a href="#algorithms">Algorithms</a><a href="#benchmarks">Benchmarks</a><a href="#resources">Resources</a><a href="acknowledgements.html">Acknowledgements</a>
+  </nav>
+
+  <main id="main">
+    <div class="hero-banner">
+    <section class="hero section-shell" aria-labelledby="heroTitle">
+      <div class="hero-copy">
+        <div class="eyebrow"><span class="status-dot"></span> IEEE TRANSACTIONS ON DEPENDABLE AND SECURE COMPUTING <span class="divider-tiny"></span> 2026</div>
+        <div class="hero-small-label">PRIVATE INFERENCE / REIMAGINED</div>
+        <h1 id="heroTitle">Intelligence<br />without <span class="gradient-text">exposure.</span></h1>
+        <p class="hero-lead">Transformer inference over encrypted data, made faster by designing the <strong>packing, computation and cryptographic boundaries together.</strong></p>
+        <div class="hero-buttons">
+          <a class="btn btn-primary" href="#architecture">Explore the system <span aria-hidden="true">↘</span></a>
+          <a class="btn btn-outline" href="https://doi.org/10.1109/TDSC.2026.3714715" target="_blank" rel="noopener noreferrer">Read on IEEE <span aria-hidden="true">↗</span></a>
+          <a class="btn btn-outline" href="https://arxiv.org/abs/2604.09975" target="_blank" rel="noopener noreferrer">Read on arXiv <span aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+
+      <div class="hero-art trace-preview">
+        <div class="art-topline"><span>ENCFORMER / ENCODER LAYER</span><span>GPU CKKS + MPC</span></div>
+        <div class="trace-preview-body"><h2>One encrypted layer.<br />Four secure boundaries.</h2><div class="preview-stages"><span class="preview-fhe">QKV → Score</span><span class="preview-bridge">⇄</span><span class="preview-mpc">Π_MBMax</span><span class="preview-fhe">Value → Output</span><span class="preview-bridge">⇄</span><span class="preview-mpc">Π_MBLN</span><span class="preview-fhe">FFN₁</span><span class="preview-bridge">⇄</span><span class="preview-mpc">Π_GELU</span><span class="preview-fhe">FFN₂</span><span class="preview-bridge">⇄</span><span class="preview-mpc">Π_MBLN₂</span></div><p>Follow the kernels, secret shares, and conversion boundaries through a complete encoder layer.</p><a class="btn btn-primary" href="#inferenceTrace">Explore the execution trace ↓</a></div>
+      </div>
+      <div class="hero-bottom">
+        <div class="hero-metric"><span class="metric-no">9.8<span>×</span></span><div>lower end-to-end latency<br /><small>vs. BOLT · average across tested settings</small></div></div>
+        <div class="metric-divider"></div>
+        <div class="hero-metric"><span class="metric-no">30.4<span>×</span></span><div>less online MPC communication<br /><small>vs. BOLT · average across tested models</small></div></div>
+        <div class="metric-divider"></div>
+        <div class="hero-metric"><span class="metric-no">0</span><div>FHE remap stages<br /><small>under SCP's kernel interfaces</small></div></div>
+        <a class="scroll-cue" href="#concept">SCROLL TO EXPLORE <span>↓</span></a>
+      </div>
+    </section>
+
+    </div>
+
+    <section id="inferenceTrace" class="section-shell execution-section" aria-labelledby="executionTitle">
+      <div class="section-heading"><div><div class="section-index">INTERACTIVE EXECUTION TRACE</div><h2 id="executionTitle">Inside an EncFormer layer.</h2></div><p>Follow encrypted GPU computation, secure nonlinear protocols, and the bridges between them. A schematic BERT encoder flow; this browser does not run cryptographic inference.</p></div>
+      <div class="execution-panel">
+        <div class="execution-toolbar"><div class="trace-view-switch" role="group" aria-label="Trace view"><button type="button" data-trace-view="single" aria-pressed="true">Single-layer view</button><button type="button" data-trace-view="multi" aria-pressed="false">Repeated layers</button></div><label class="trace-model-label">MODEL <select id="traceModel"><option value="12">BERT-base · 12 layers</option><option value="24">BERT-large · 24 layers</option></select></label></div>
+        <nav id="globalTrace" class="global-trace" aria-label="Inference stages"></nav>
+        <div class="execution-legend"><span data-domain="fhe">● GPU / FHE</span><span data-domain="mpc">● Two-party MPC</span><span data-domain="boundary">● Secure conversion</span><span data-domain="client">● Client</span><span id="traceLayerLabel">Client preparation</span></div>
+        <div class="execution-body"><div id="traceScene" class="art-stage-window" role="img" aria-label="Client prepares input embeddings"></div><div class="execution-description"><span id="traceIndex" class="micro-label">CLIENT INPUT</span><h3 id="traceTitle">Input sequence</h3><p id="traceDescription" aria-live="polite"></p><p id="traceDetail"></p><div id="traceNote" class="scene-note"></div></div></div>
+        <nav id="layerTrace" class="layer-trace" aria-label="Ten phases inside the selected encoder layer"></nav>
+        <div class="execution-bottom"><p id="tracePattern">EncFormer repeats encrypted GPU kernels and secure MPC protocols across its Transformer layers.</p><div class="execution-controls"><button id="tracePrev" type="button" aria-label="Previous trace step">← Previous</button><button id="tracePlay" type="button" aria-pressed="false">▶ Play trace</button><button id="traceNext" type="button" aria-label="Next trace step">Next →</button></div></div>
+      </div>
+    </section>
+
+    <section id="concept" class="section-shell intro-section">
+      <div class="section-heading"><div><div class="section-index">01 / THE PROBLEM</div><h2>Privacy shouldn't<br />bring everything <em>to a halt.</em></h2></div><p>When a service processes private text, it usually sees it. Encryption can protect the input—but naïve encrypted Transformer computation is expensive. EncFormer changes how the cryptographic pieces fit together.</p></div>
+      <div class="problem-grid">
+        <article class="problem-card"><div class="problem-number">01</div><div class="problem-icon icon-cyan"><svg viewBox="0 0 50 50" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="6" y="8" width="38" height="34" rx="6"/><path d="M6 19h38M16 28h18M16 34h11"/><circle cx="14" cy="14" r="1" fill="currentColor"/><circle cx="20" cy="14" r="1" fill="currentColor"/></svg></div><h3>Privacy by design</h3><p>The client encrypts its input. The server evaluates the model without seeing plaintext activations; only prescribed outputs are revealed.</p><div class="card-footer">CKKS ENCRYPTION <span>↗</span></div></article>
+        <article class="problem-card"><div class="problem-number">02</div><div class="problem-icon icon-violet"><svg viewBox="0 0 50 50" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 13h40M5 25h40M5 37h40M14 4v42M26 4v42M38 4v42"/><circle cx="26" cy="25" r="8" fill="currentColor" fill-opacity=".15"/></svg></div><h3>Fast linear algebra</h3><p>GPU-accelerated FHE handles projections and attention kernels while layouts are chosen to compose without expensive remapping.</p><div class="card-footer">STAGE COMPATIBILITY <span>↗</span></div></article>
+        <article class="problem-card"><div class="problem-number">03</div><div class="problem-icon icon-orange"><svg viewBox="0 0 50 50" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 25h12l7-14 7 28 6-14h8"/><circle cx="24" cy="11" r="3"/><circle cx="31" cy="39" r="3"/></svg></div><h3>Smarter boundaries</h3><p>Two-party MPC evaluates nonlinear blocks. Complex-slot conversion and a cost model reduce or justify the work crossing FHE–MPC boundaries.</p><div class="card-footer">BOUNDARY CO-DESIGN <span>↗</span></div></article>
+      </div>
+    </section>
+
+    <section id="architecture" class="section-shell architecture-section">
+      <div class="section-heading"><div><div class="section-index">02 / SYSTEM ARCHITECTURE</div><h2>One system.<br /><em>Two cryptographic worlds.</em></h2></div><p>Click each stage to see where computation happens, what representation moves across the boundary, and why the layout matters.</p></div>
+      <div class="architecture-panel">
+        <div class="architecture-top"><span class="micro-label">INTERACTIVE PIPELINE / SIMPLIFIED</span><div class="legend"><span><i class="legend-fhe"></i> GPU / FHE</span><span><i class="legend-mpc"></i> 2-PARTY / MPC</span><span><i class="legend-client"></i> CLIENT</span></div></div>
+        <div class="architecture-steps" id="architectureSteps">
+          <button type="button" class="arch-step is-selected" data-arch="0" aria-pressed="true"><span class="arch-step-head">01 <span>CLIENT</span></span><span class="arch-icon">⌘</span><strong>Input + CKKS</strong><small>Encrypt private inputs</small><span class="arch-arrow" aria-hidden="true">→</span></button>
+          <button type="button" class="arch-step" data-arch="1" aria-pressed="false"><span class="arch-step-head">02 <span>FHE</span></span><span class="arch-icon">⌗</span><strong>Q / K / V</strong><small>Projection with SCP</small><span class="arch-arrow" aria-hidden="true">→</span></button>
+          <button type="button" class="arch-step" data-arch="2" aria-pressed="false"><span class="arch-step-head">03 <span>FHE</span></span><span class="arch-icon">⋈</span><strong>Attention score</strong><small>Folded diagonals</small><span class="arch-arrow" aria-hidden="true">→</span></button>
+          <button type="button" class="arch-step arch-step-mpc" data-arch="3" aria-pressed="false"><span class="arch-step-head">04 <span>MPC</span></span><span class="arch-icon">≋</span><strong>MBMax</strong><small>Secure nonlinearity</small><span class="arch-arrow" aria-hidden="true">→</span></button>
+          <button type="button" class="arch-step" data-arch="4" aria-pressed="false"><span class="arch-step-head">05 <span>FHE</span></span><span class="arch-icon">⊙</span><strong>Value / output</strong><small>Head-major layout</small><span class="arch-arrow" aria-hidden="true">→</span></button>
+          <button type="button" class="arch-step arch-step-mpc" data-arch="5" aria-pressed="false"><span class="arch-step-head">06 <span>MPC</span></span><span class="arch-icon">∿</span><strong>LN + GELU</strong><small>Secure nonlinear blocks</small></button>
+        </div>
+        <div class="architecture-inspect"><div><span class="micro-label" id="archLabel">STAGE 01 / CLIENT</span><h3 id="archTitle">Private input, private key</h3><p id="archDescription">The client holds the input and secret key, encrypting its representation before transferring ciphertexts to the server. The server holds the model and evaluation keys, not the decryption key.</p></div><div class="arch-meta"><span class="micro-label">REPRESENTATION</span><strong id="archRepresentation">Plaintext → CKKS ciphertext</strong><span class="micro-label">SECURITY / EXECUTION</span><strong id="archSecurity">Client-held secret key</strong></div></div>
+        <p class="panel-footnote">A representative encoder path, not an exact scheduling diagram. The actual model has additional normalization, residual and feed-forward stages, and bidirectional secure conversion protocols. <a href="https://arxiv.org/html/2604.09975" target="_blank" rel="noopener noreferrer">Paper §I–V ↗</a></p>
+      </div>
+    </section>
+
+    <section id="algorithms" class="section-shell algorithms-section">
+      <div class="section-heading"><div><div class="section-index">03 / ALGORITHM PLAYGROUND</div><h2>The clever part is<br /><em>how things connect.</em></h2></div><p>Three hands-on demonstrations of the paper's key system ideas. These are educational visualizations, not executions of the cryptographic code.</p></div>
+      <div class="lab-block lab-packing">
+        <div class="lab-title"><div><span class="lab-kicker">LAB / 001</span><h3>Stage Compatible Patterns <span>(SCP)</span></h3><p>Explore the three canonical layouts that let neighboring FHE kernels speak the same packing language.</p></div><div class="lab-tag"><span class="status-dot"></span> NO FHE REMAP STAGES</div></div>
+        <div class="packing-studio">
+          <div class="studio-main"><div class="studio-bar"><span class="micro-label">ENCRYPTED SLOT LAYOUT</span><span class="micro-label">TOY TENSOR · 4 × 4</span></div><div class="slot-grid" id="slotGrid" aria-label="Illustrative CKKS slot packing grid"></div><div class="slot-legend"><span><i></i> HEAD 0</span><span><i></i> HEAD 1</span><span><i></i> HEAD 2</span><span><i></i> HEAD 3</span></div></div>
+          <div class="studio-side"><div class="studio-options" role="tablist" aria-label="SCP packing format"><button role="tab" type="button" class="packing-tab is-selected" data-layout="segment" aria-selected="true">01 <strong>Segment-column</strong> <span>↗</span></button><button role="tab" type="button" class="packing-tab" data-layout="diagonal" aria-selected="false">02 <strong>Folded-diagonal</strong> <span>↗</span></button><button role="tab" type="button" class="packing-tab" data-layout="head" aria-selected="false">03 <strong>Head-major</strong> <span>↗</span></button></div><div class="studio-info"><span class="micro-label" id="layoutLabel">LAYOUT 01 / PROJECTION</span><h4 id="layoutTitle">Segment-column</h4><p id="layoutDescription">Each segment stores one token-column slice, keeping projected features organized for subsequent attention operations.</p></div><button type="button" class="subtle-action" id="breakPacking">↗ &nbsp; Show why layout compatibility matters</button><p id="packingOutcome" class="packing-outcome" aria-live="polite">SCP aligns producer and consumer layouts directly: no FHE-side repacking between adjacent kernels.</p></div>
+        </div>
+        <div class="lab-foot"><span>RULE 01 <strong>FHE → FHE: compatible</strong></span><span>RULE 02 <strong>MPC → FHE: minimal</strong></span><span>RULE 03 <strong>FHE → MPC: minimal</strong></span><a href="https://arxiv.org/html/2604.09975" target="_blank" rel="noopener noreferrer">§III / SEE PAPER ↗</a></div>
+      </div>
+
+      <div class="lab-block lab-conversion">
+        <div class="lab-title"><div><span class="lab-kicker">LAB / 002</span><h3>More work per ciphertext</h3><p>A CKKS ciphertext has complex slots. EncFormer uses both real and imaginary channels at FHE–MPC boundaries to carry two real vectors.</p></div><div class="conversion-head-stat"><span class="micro-label">EVEN VECTOR COUNTS</span><strong>½</strong><small>ciphertext payload</small></div></div>
+        <div class="convert-studio">
+          <div class="convert-main"><div class="conversion-col"><div class="convert-heading"><span>REAL-ONLY CONVERSION</span><span class="convert-count" id="realCount">8 CT</span></div><div id="realPacking" class="packing-stream"></div><div class="convert-caption">One real vector per ciphertext</div></div><div class="convert-divider"><div class="divider-arrow">→</div><span>VERSUS</span></div><div class="conversion-col"><div class="convert-heading"><span>COMPLEX CONVERSION</span><span class="convert-count accent-text" id="complexCount">4 CT</span></div><div id="complexPacking" class="packing-stream complex-stream"></div><div class="convert-caption">Two real vectors in Re(z) and Im(z)</div></div></div>
+          <div class="convert-controls"><label for="vectorRange">Real vectors crossing the boundary <strong><output id="vectorValue">8</output></strong></label><input id="vectorRange" type="range" min="2" max="12" step="1" value="8" /><div class="savings-row"><span>THEORETICAL CIPHERTEXT COUNT REDUCTION</span><strong id="conversionSaving">50%</strong></div><p>Count reduction, not an end-to-end speedup prediction. The paper separately measures conversion latency and modulus trimming.</p></div>
+        </div>
+        <div class="lab-foot"><span>REAL + IMAGINARY <strong>2n scalars / n complex slots</strong></span><span>PROTOCOL <strong>Secure semi-honest 2PC</strong></span><a href="https://arxiv.org/html/2604.09975" target="_blank" rel="noopener noreferrer">§V / SEE PAPER ↗</a></div>
+      </div>
+
+      <div class="lab-block lab-protocols">
+        <div class="lab-title"><div><span class="lab-kicker">LAB / 003</span><h3>Nonlinear protocol inspector</h3><p>The expensive nonlinear functions move to two-party MPC, with protocol-specific optimizations.</p></div><div class="protocol-total"><strong>7</strong><span>interactive MPC rounds<br />per layer (protocol total)</span></div></div>
+        <div class="protocol-body"><div class="protocol-menu" role="tablist" aria-label="MPC nonlinear protocol"><button type="button" role="tab" class="protocol-tab is-selected" data-protocol="mbmax" aria-selected="true"><span>01 / SOFTMAX SURROGATE</span><strong>MBMax</strong><small>3 rounds</small></button><button type="button" role="tab" class="protocol-tab" data-protocol="mbln" aria-selected="false"><span>02 / LAYER NORM SURROGATE</span><strong>MBLN</strong><small>0 rounds</small></button><button type="button" role="tab" class="protocol-tab" data-protocol="gelu" aria-selected="false"><span>03 / ACTIVATION</span><strong>BOLT-style GELU</strong><small>4 rounds</small></button></div><div class="protocol-display"><span class="micro-label" id="protocolLabel">ALGORITHM 01 / MPC MBMAX</span><div class="formula" id="protocolFormula">Y = (X + c)<sup>5</sup> / R<sub>d</sub></div><p id="protocolDescription">A fifth-power softmax surrogate with a public shift and offline-distilled normalization constant. The short secure multiplication chain takes three rounds.</p><div id="protocolSteps" class="protocol-steps"></div><div class="protocol-note" id="protocolNote">c and R<sub>d</sub> are public, distilled constants; their values are model-specific. The visual is symbolic.</div></div></div>
+        <div class="lab-foot"><span>SECURE COMPUTATION <strong>EzPC / SCI</strong></span><span>ROUND COUNT <strong>3 + 0 + 4</strong></span><a href="https://arxiv.org/html/2604.09975" target="_blank" rel="noopener noreferrer">§IV / SEE PAPER ↗</a></div>
+      </div>
+
+      <div class="lab-block lab-decision">
+        <div class="lab-title"><div><span class="lab-kicker">LAB / 004</span><h3>Boundary decision engine</h3><p>When is converting more data actually faster? Experiment with the paper's cost model under different network conditions.</p></div><div class="lab-tag">INTERACTIVE WHAT-IF MODEL</div></div>
+        <div class="decision-studio"><div class="decision-controls"><div class="form-heading"><span class="micro-label">NETWORK PROFILE</span><div class="profile-switch" role="group" aria-label="Network presets"><button class="is-active" type="button" data-profile="LAN">LAN</button><button type="button" data-profile="WAN1">WAN1</button><button type="button" data-profile="WAN2">WAN2</button><button type="button" data-profile="WAN3">WAN3</button></div></div>
+          <label class="input-row">Extra ciphertexts <output id="extraCtsOut">4</output><input type="range" id="extraCts" min="0" max="24" step="1" value="4" /></label>
+          <label class="input-row">Ciphertext payload / item (MB) <output id="ctMbOut">2.0</output><input type="range" id="ctMb" min="0.25" max="12" step="0.25" value="2" /></label>
+          <label class="input-row">MPC rounds saved <output id="roundsSavedOut">3</output><input type="range" id="roundsSaved" min="0" max="8" step="1" value="3" /></label>
+          <label class="input-row">Compute time saved (ms) <output id="computeSavedOut">180</output><input type="range" id="computeSaved" min="0" max="1000" step="10" value="180" /></label>
+          <label class="input-row">MPC communication / round (MB) <output id="roundMbOut">2.0</output><input type="range" id="roundMb" min="0" max="16" step="0.5" value="2" /></label>
+          <label class="input-row">Extra conversion round-trips <output id="extraRttsOut">0</output><input type="range" id="extraRtts" min="0" max="4" step="1" value="0" /></label>
+          <div class="profile-description"><span class="micro-label">NETWORK</span><span id="profileDescription">1 Gbps bandwidth · 0.3 ms RTT</span></div>
+        </div><div class="decision-result"><div class="decision-result-label">PREDICTED DELTA LATENCY VS. MINIMAL BASELINE</div><div class="decision-big" id="decisionDelta">−178 ms</div><span class="decision-outcome" id="decisionOutcome">CANDIDATE FAVORED</span><div class="cost-bars"><div class="cost-row"><div><span>Extra boundary cost</span><strong id="extraCostValue">64 ms</strong></div><div class="bar-track"><div id="extraCostBar" class="bar-fill cost-extra"></div></div></div><div class="cost-row"><div><span>Compute + MPC savings</span><strong id="savingsValue">240 ms</strong></div><div class="bar-track"><div id="savingsBar" class="bar-fill cost-saving"></div></div></div></div><div class="decision-equation">ΔT = added conversion cost − compute / MPC savings</div><p>These sliders use illustrative cost inputs, not recorded experimental measurements. The network presets match the paper; the decision criterion follows its Equations 4–6.</p></div></div>
+        <div class="lab-foot"><span>MINIMAL BASELINE <strong>4 conversion pairs / encoder layer</strong></span><span>DECISION <strong>Choose a candidate only if ΔT &lt; 0</strong></span><a href="https://arxiv.org/html/2604.09975" target="_blank" rel="noopener noreferrer">§V / SEE PAPER ↗</a></div>
+      </div>
+    </section>
+
+    <section id="benchmarks" class="section-shell benchmarks-section">
+      <div class="section-heading"><div><div class="section-index">04 / REPORTED RESULTS</div><h2>The numbers.<br /><em>No synthetic benchmarks.</em></h2></div><p>Explore the results reported in the paper. Every value below comes from the published manuscript's evaluation tables, with model sizes and network profiles preserved.</p></div>
+      <div class="benchmark-overview"><div class="bench-feature"><span class="micro-label">END-TO-END LATENCY</span><strong>1.3–9.8<span>×</span></strong><p>average speedup over compared hybrid systems</p></div><div class="bench-feature"><span class="micro-label">ONLINE MPC COMMUNICATION</span><strong>1.4–30.4<span>×</span></strong><p>average reduction over compared hybrid systems</p></div><div class="bench-feature"><span class="micro-label">FHE-ONLY COMPARISON / LAN</span><strong>1.9–3.5<span>×</span></strong><p>faster on BERT-base under a matched backend</p></div></div>
+      <div class="benchmark-explorer"><div class="chart-header"><div><span class="micro-label">EXPERIMENT EXPLORER / TABLE VIII</span><h3>End-to-end comparison</h3></div><div class="chart-legend">Lower is better <span class="chart-legend-line"></span> ENCFORMER</div></div><div class="chart-controls"><label>MODEL <select id="benchModel"><option value="bert-base">BERT-base · 128 tokens</option><option value="gpt2-base">GPT2-base · 64 tokens</option><option value="bert-large">BERT-large · 128 tokens</option></select></label><label>NETWORK <select id="benchNetwork"><option value="LAN">LAN · 1 Gbps / 0.3 ms</option><option value="WAN1">WAN1 · 400 Mbps / 4 ms</option><option value="WAN2">WAN2 · 100 Mbps / 4 ms</option><option value="WAN3">WAN3 · 100 Mbps / 80 ms</option></select></label><label>METRIC <select id="benchMetric"><option value="latency">End-to-end latency (min)</option><option value="comm">Online MPC communication (GB)</option></select></label></div><div class="chart-content" id="benchmarkBars" aria-live="polite"></div><div class="chart-summary" id="benchSummary"></div><div class="chart-foot">Prior-system figures are taken from their published papers; network latency figures include measured compute plus modelled network overlays. Online MPC communication excludes boundary-conversion payload, as in Table VIII. <a href="https://arxiv.org/html/2604.09975" target="_blank" rel="noopener noreferrer">Source ↗</a></div></div>
+      <div class="results-secondary"><div class="accuracy-panel"><div><span class="micro-label">ACCURACY / TABLE IX</span><h3>Utility under encryption</h3><p>Compare the public model, the distilled surrogate teacher and the encrypted execution on selected GLUE tasks.</p></div><div id="accuracyGraph" class="accuracy-graph"></div><p class="fine-print">MRPC is accuracy, not F1. Differences partly reflect surrogate nonlinearities and distillation; not all the reduction comes from encrypted execution.</p></div><div class="kernel-panel"><span class="micro-label">CONVERSION / TABLE VII</span><h3>Complex packing in practice</h3><div class="kernel-stat"><strong>20.97 <span>MB</span></strong><span>real-only conversion pair</span></div><div class="kernel-arrow">↓ complex + modulus trimming</div><div class="kernel-stat highlight"><strong>6.41 <span>MB</span></strong><span>optimized conversion pair</span></div><div class="kernel-rule"></div><div class="kernel-footer"><strong>3.26–3.33×</strong><span>reported conversion speedup<br />across tested networks</span></div></div></div>
+    </section>
+
+    <section id="resources" class="section-shell resources-section"><div class="resources-heading"><div><div class="section-index">05 / EXPLORE FURTHER</div><h2>From the demo<br /><em>to the details.</em></h2><p>Read the peer-reviewed paper, inspect the official implementation, and reproduce experiments using the public artifact.</p></div><a href="#top" class="back-top">BACK TO TOP ↑</a></div><div class="resource-grid"><a class="resource-card" href="https://doi.org/10.1109/TDSC.2026.3714715" target="_blank" rel="noopener noreferrer"><span class="resource-icon">↗</span><span class="resource-type">PEER-REVIEWED PUBLICATION</span><h3>IEEE TDSC</h3><p>Read the published paper and its technical evaluation.</p><span class="resource-link">OPEN PAPER ↗</span></a><a class="resource-card" href="https://github.com/Yufannnn/EncFormer" target="_blank" rel="noopener noreferrer"><span class="resource-icon">⌘</span><span class="resource-type">OFFICIAL IMPLEMENTATION</span><h3>GitHub source</h3><p>GPU CKKS, EzPC/SCI, model scripts and evaluation code.</p><span class="resource-link">VIEW REPOSITORY ↗</span></a><a class="resource-card" href="https://doi.org/10.5281/zenodo.23225542" target="_blank" rel="noopener noreferrer"><span class="resource-icon">◫</span><span class="resource-type">ARCHIVED REPRODUCIBILITY</span><h3>Zenodo artifact</h3><p>Preserved research software associated with the release.</p><span class="resource-link">VIEW ARTIFACT ↗</span></a><a class="resource-card" href="https://arxiv.org/html/2604.09975" target="_blank" rel="noopener noreferrer"><span class="resource-icon">≡</span><span class="resource-type">OPEN ACCESS MANUSCRIPT</span><h3>Readable paper</h3><p>Technical descriptions, algorithms and full result tables.</p><span class="resource-link">READ ON ARXIV ↗</span></a></div><div class="citation-box"><div><span class="micro-label">CITE THIS WORK</span><h3>Built on reproducible research.</h3><p>If EncFormer is useful to your work, cite the published IEEE TDSC article.</p></div><div class="cite-code"><pre id="bibtex">@article{zhu2026encformer,
+  title={EncFormer: Secure and Efficient Transformer Inference over Encrypted Data},
+  author={Zhu, Yufan and Jin, Chao and Aung, Khin Mi Mi and Xiao, Xiaokui},
+  journal={IEEE Transactions on Dependable and Secure Computing},
+  year={2026},
+  doi={10.1109/TDSC.2026.3714715}
+}</pre><button type="button" id="copyCitation" class="copy-button" aria-label="Copy BibTeX citation">COPY BIBTEX ↗</button></div></div></section>
+    <aside id="visitors" class="section-shell atlas-footer" aria-label="Visitor atlas">
+      <div class="atlas-footer-inner">
+        <div class="world-map atlas-map" id="worldMap" aria-label="Country-level visitor map"><img src="assets/world.svg" alt="World country outlines" loading="lazy" /><svg id="mapPoints" viewBox="0 0 1100 520" aria-hidden="true"></svg></div>
+        <div class="atlas-copy"><div class="atlas-heading"><h2>A little visitor atlas.</h2><span id="visitorMode" class="visitor-mode">SAMPLE · NOT LIVE</span></div>
+          <div class="atlas-totals"><span><strong id="visitorTotal">—</strong> visits</span><span><strong id="visitorToday">—</strong> today</span><span><strong id="visitorCountries">—</strong> countries</span></div>
+          <p id="visitorTotalCaption">Illustrative numbers · not visits</p><p id="yourLocation">Geography is illustrative</p>
+          <div class="atlas-actions"><button type="button" id="visitorDemo" class="subtle-action">Hide sample data</button><button type="button" id="visitorRefresh" class="subtle-action">↻ Refresh</button></div>
+        </div>
+      </div>
+    </aside>
+  </main>
+  <footer class="footer"><div class="footer-top"><div class="footer-brand"><span class="logo-mini"><img src="assets/EncFormer.png" alt="" width="40" height="40" /></span><strong>EncFormer</strong><span>SECURE INFERENCE / 2026</span></div><div class="footer-links"><a href="#architecture">System</a><a href="#algorithms">Algorithms</a><a href="#benchmarks">Results</a><a href="acknowledgements.html">Acknowledgements</a><a href="https://github.com/Yufannnn/EncFormer" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div></div><div class="footer-bottom"><span>© 2026 EncFormer authors · NUS & A*STAR</span><span>Educational illustrations, not a live cryptographic service.</span><button type="button" id="shareSite" class="share-button">SHARE THIS PROJECT ↗</button></div></footer>
+
+  <div id="commandDialog" class="command-overlay" role="dialog" aria-modal="true" aria-label="Quick navigation" hidden><div class="command-box"><div class="command-search"><span>⌕</span><input type="text" id="commandInput" placeholder="Where would you like to go?" autocomplete="off" /><kbd>ESC</kbd></div><div class="command-results" id="commandResults"></div><div class="command-footer">⌘ / CTRL + K TO OPEN <span>↑ ↓ navigate · ↵ select</span></div></div></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
