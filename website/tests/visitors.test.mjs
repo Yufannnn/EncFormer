@@ -6,11 +6,11 @@ import vm from 'node:vm';
 const source=fs.readFileSync(new URL('../../docs/app.js',import.meta.url),'utf8');
 const atlas=source.slice(source.indexOf('  // Global visitor map:'),source.indexOf('  // Cloudflare Web Analytics'));
 
-async function setup({offline=false,optOut=false}={}){
+async function setup({offline=false,optOut=false,configured=true}={}){
   const elements=new Map(),calls=[],storage=new Map();
   function element(){return {textContent:'',children:[],style:{},events:{},classList:{toggle(){},remove(){}},replaceChildren(){this.children=[];},appendChild(child){this.children.push(child);},setAttribute(){},addEventListener(name,fn){this.events[name]=fn;}};}
   const $=id=>{if(!elements.has(id))elements.set(id,element());return elements.get(id);};
-  const context={$,number:String,config:{visitorApi:'https://visitors.example'},data:{sampleVisits:{total:1248,today:47,countries:[{country:'SG',views:47}]}},document:{createElementNS:element},navigator:{doNotTrack:optOut?'1':'0'},location:{pathname:'/EncFormer/index.html'},sessionStorage:{getItem:key=>storage.get(key),setItem:(key,value)=>storage.set(key,value)},toast(){},console:{warn(){}},fetch:async(url,options={})=>{
+  const context={$,number:String,config:{visitorApi:configured?'https://visitors.example':''},document:{createElementNS:element},navigator:{doNotTrack:optOut?'1':'0'},location:{pathname:'/EncFormer/index.html'},sessionStorage:{getItem:key=>storage.get(key),setItem:(key,value)=>storage.set(key,value)},toast(){},console:{warn(){}},fetch:async(url,options={})=>{
     calls.push({url,options});
     if(url==='assets/countries.json')return {ok:true,json:async()=>({SG:{x:866,y:257,name:'Singapore'}})};
     if(offline)throw Error('Network unavailable');
@@ -29,7 +29,7 @@ test('live atlas loads real data without displaying sample counts first',async()
   assert.equal(ui.$('visitorMode').textContent,'LIVE DATA');
   assert.equal(ui.$('visitorTotal').textContent,'2');
   assert.equal(ui.$('mapPoints').children.length,2);
-  assert.equal(ui.$('yourLocation').textContent,'VIEWING FROM / SINGAPORE');
+  assert.equal(ui.$('yourLocation').textContent,'COUNTRIES REFLECT NETWORK LOCATION');
   const visit=ui.calls.find(call=>call.url.endsWith('/api/visit'));
   assert.equal(JSON.parse(visit.options.body).page,'/EncFormer/index.html');
   await vm.runInNewContext('refreshLive(true)',ui.context);
@@ -42,13 +42,20 @@ test('tracking opt-out still permits viewing aggregate data',async()=>{
   assert.equal(ui.$('visitorMode').textContent,'LIVE DATA');
 });
 
-test('offline atlas never substitutes sample totals; preview remains explicitly labelled',async()=>{
-  const ui=await setup({offline:true});
+test('offline atlas clears counts and markers without inventing replacement data',async()=>{
+  const ui=await setup();
+  assert.equal(ui.$('mapPoints').children.length,2);
+  ui.context.fetch=async()=>{throw Error('Network unavailable');};
+  await vm.runInNewContext('refreshLive(false)',ui.context);
   assert.equal(ui.$('visitorMode').textContent,'LIVE DATA UNAVAILABLE');
   assert.equal(ui.$('visitorTotal').textContent,'—');
-  ui.$('visitorDemo').events.click();
-  assert.equal(ui.$('visitorMode').textContent,'SAMPLE · NOT LIVE');
-  assert.equal(ui.$('visitorTotal').textContent,'1248');
-  ui.$('visitorDemo').events.click();
+  assert.equal(ui.$('mapPoints').children.length,0);
+});
+
+test('without a configured endpoint the atlas stays empty',async()=>{
+  const ui=await setup({configured:false});
+  assert.equal(ui.$('visitorMode').textContent,'TELEMETRY NOT CONFIGURED');
   assert.equal(ui.$('visitorTotal').textContent,'—');
+  assert.equal(ui.$('mapPoints').children.length,0);
+  assert.equal(ui.calls.some(call=>call.url.includes('/api/')),false);
 });

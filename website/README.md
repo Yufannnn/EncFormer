@@ -27,8 +27,8 @@ node --test website/tests/*.test.mjs website/visitor-worker/test/worker.test.js
 
 The visitor atlas uses a live Cloudflare Worker/D1 endpoint on the Workers Free plan.
 It stores only aggregate counts by UTC day and country, respects browser tracking
-opt-outs, and counts page visits rather than unique people. Sample data is available
-only through the explicitly labelled preview button. See [DEPLOY.md](DEPLOY.md)
+opt-outs, and counts page visits rather than unique people. Country markers reflect
+network location and do not verify a human visitor. There is no sample-data mode. See [DEPLOY.md](DEPLOY.md)
 for setup details. Never place API secrets in `docs/config.js`.
 
 ## Logo sources

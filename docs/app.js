@@ -193,16 +193,15 @@
 
   // Global visitor map: generated from local Natural Earth outlines. Counters are never invented.
   const fallbackCoords={SG:{x:866,y:257,name:'Singapore'},US:{x:240,y:150,name:'United States'},GB:{x:541,y:132,name:'United Kingdom'},DE:{x:570,y:134,name:'Germany'},IN:{x:798,y:215,name:'India'},JP:{x:960,y:163,name:'Japan'},AU:{x:937,y:352,name:'Australia'},FR:{x:545,y:153,name:'France'}};
-  let coords=fallbackCoords, live=false, showingSample=true, lastLiveData=null;
+  let coords=fallbackCoords;
   const isoName=(iso)=>coords[iso]?.name || ({GB:'United Kingdom',SG:'Singapore',US:'United States'}[iso]||iso);
   function addSVG(parent,name,attrs){const el=document.createElementNS('http://www.w3.org/2000/svg',name);Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,String(v)));parent.appendChild(el);return el;}
-  function drawVisitors(summary, sample=false){
-    showingSample=sample;
-    $('visitorMode').textContent=sample?'SAMPLE · NOT LIVE':'LIVE DATA';
-    $('visitorMode').classList.toggle('is-live',!sample);
+  function drawVisitors(summary){
+    $('visitorMode').textContent='LIVE DATA';
+    $('visitorMode').classList.toggle('is-live',true);
     $('visitorTotal').textContent=number(summary.total||0);
     $('visitorToday').textContent=number(summary.today||0);
-    $('visitorTotalCaption').textContent=sample?'Illustrative numbers · not visits':'Recorded page visits · not unique users';
+    $('visitorTotalCaption').textContent='Approximate page visits · not unique people';
     const countryEntries=Array.isArray(summary.countries)?summary.countries:[];
     $('visitorCountries').textContent=number(countryEntries.filter(x=>x.country && x.country!=='ZZ').length);
     const points=$('mapPoints');points.replaceChildren();
@@ -213,27 +212,21 @@
       const halo=addSVG(points,'circle',{cx:c.x,cy:c.y,r:radius+9,class:'map-point-halo'});
       halo.style.animationDelay=`${(index%8)*.23}s`;
       const point=addSVG(points,'circle',{cx:c.x,cy:c.y,r:radius,class:'map-point'});
-      const title=addSVG(point,'title',{});title.textContent=`${isoName(v.country)}: ${number(v.views)} ${sample?'sample':'recorded'} visits`;
+      const title=addSVG(point,'title',{});title.textContent=`${isoName(v.country)}: ${number(v.views)} recorded visits · network location`;
     });
-    $('visitorDemo').textContent=sample?'Hide sample data':'Show sample data';
-    $('yourLocation').textContent=sample?'PREVIEW / GEOGRAPHY IS ILLUSTRATIVE':'COUNTRY-LEVEL AGGREGATES';
+    $('yourLocation').textContent='COUNTRIES REFLECT NETWORK LOCATION';
   }
   function clearVisitors(){
-    showingSample=false; $('visitorMode').textContent=live?'LIVE · NO VISITS YET':config.visitorApi?'LIVE DATA UNAVAILABLE':'TELEMETRY NOT CONFIGURED';
-    $('visitorMode').classList.toggle('is-live',live);
-    ['visitorTotal','visitorToday','visitorCountries'].forEach(id=>$(id).textContent=live?'0':'—');
-    $('visitorTotalCaption').textContent=live?'Recorded page visits':config.visitorApi?'Live counts temporarily unavailable · try Refresh':'Configure an analytics endpoint for live data';
+    $('visitorMode').textContent=config.visitorApi?'LIVE DATA UNAVAILABLE':'TELEMETRY NOT CONFIGURED';
+    $('visitorMode').classList.toggle('is-live',false);
+    ['visitorTotal','visitorToday','visitorCountries'].forEach(id=>$(id).textContent='—');
+    $('visitorTotalCaption').textContent=config.visitorApi?'Live counts temporarily unavailable · try Refresh':'Live counts are not configured';
     $('mapPoints').replaceChildren();
-    $('visitorDemo').textContent='Show sample data';
-    $('yourLocation').textContent='NO LIVE LOCATIONS';
+    $('yourLocation').textContent='COUNTRIES REFLECT NETWORK LOCATION';
   }
-  $('visitorDemo').addEventListener('click',()=>{
-    if(showingSample){if(live&&lastLiveData)drawVisitors(lastLiveData,false);else clearVisitors();}
-    else drawVisitors(data.sampleVisits,true);
-  });
   async function loadCoords(){
     try{const r=await fetch('assets/countries.json');if(!r.ok)throw Error('Country lookup');coords={...fallbackCoords,...await r.json()};}
-    catch(_){ /* hardcoded preview country locations remain available */ }
+    catch(_){ /* fallback country locations remain available */ }
   }
   async function refreshLive(record){
     if(!config.visitorApi)return;
@@ -252,26 +245,20 @@
       }
       const r=await fetch(`${base}/api/summary`,{cache:'no-store',mode:'cors'});if(!r.ok)throw Error(`Summary returned ${r.status}`);
       const s=await r.json();if(!s||typeof s.total!=='number'||!Array.isArray(s.countries))throw Error('Unexpected response');
-      live=true;lastLiveData=s;drawVisitors(s,false);
-      if(s.viewerCountry&&s.viewerCountry!=='ZZ')$('yourLocation').textContent=`VIEWING FROM / ${isoName(s.viewerCountry).toUpperCase()}`;
+      drawVisitors(s);
     }catch(err){
       console.warn('Visitor analytics unavailable:',err);
-      live=false;
-      if(!showingSample)clearVisitors();
-      $('visitorMode').textContent=showingSample?'OFFLINE · SAMPLE DATA':'LIVE DATA UNAVAILABLE';
-      $('visitorMode').classList.remove('is-live');
+      clearVisitors();
     }
   }
   $('visitorRefresh').addEventListener('click',()=>config.visitorApi?refreshLive(false):toast('No visitor endpoint configured; see website/DEPLOY.md'));
   async function initializeVisitors(){
-    // A configured live atlas never flashes invented counts while loading.
+    clearVisitors();
     if(config.visitorApi){
-      clearVisitors();
       $('visitorMode').textContent='CONNECTING';
       $('visitorTotalCaption').textContent='Loading recorded page visits…';
-    }else drawVisitors(data.sampleVisits,true);
+    }
     await loadCoords();
-    if(showingSample)drawVisitors(data.sampleVisits,true);
     if(config.visitorApi)refreshLive(true);
   }
   initializeVisitors();

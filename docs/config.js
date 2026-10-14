@@ -4,7 +4,7 @@
  *
  * Run the optional Cloudflare Worker (see ../website/visitor-worker and ../website/DEPLOY.md),
  * then paste its HTTPS origin below, without a trailing slash.
- * Empty string = no tracking / no live counters / explicitly labeled preview.
+ * Empty string = no tracking / no live counters.
  */
 window.ENCFORMER_CONFIG = {
   visitorApi: "https://encformer-visitors.encformer-visitors.workers.dev",

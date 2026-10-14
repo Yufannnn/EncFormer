@@ -36,13 +36,4 @@ window.ENCFORMER_DATA = {
     {name: "MRPC (acc)", full: 87.75, teacher: 87.01, ours: 86.76},
     {name: "RTE", full: 72.56, teacher: 69.43, ours: 70.03},
   ],
-  sampleVisits: {
-    total: 1248, today: 47, countries: [
-      {country: "SG", views: 383}, {country: "US", views: 274},
-      {country: "GB", views: 151}, {country: "DE", views: 116},
-      {country: "IN", views: 108}, {country: "JP", views: 92},
-      {country: "AU", views: 77}, {country: "FR", views: 47},
-    ],
-    daily: [43, 55, 39, 64, 50, 78, 83, 51, 48, 76, 94, 62, 71, 47],
-  },
 };
