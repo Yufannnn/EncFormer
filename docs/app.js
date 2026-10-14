@@ -216,13 +216,13 @@
       const title=addSVG(point,'title',{});title.textContent=`${isoName(v.country)}: ${number(v.views)} ${sample?'sample':'recorded'} visits`;
     });
     $('visitorDemo').textContent=sample?'Hide sample data':'Show sample data';
-    if(sample)$('yourLocation').textContent='PREVIEW / GEOGRAPHY IS ILLUSTRATIVE';
+    $('yourLocation').textContent=sample?'PREVIEW / GEOGRAPHY IS ILLUSTRATIVE':'COUNTRY-LEVEL AGGREGATES';
   }
   function clearVisitors(){
-    showingSample=false; $('visitorMode').textContent=live?'LIVE · NO VISITS YET':'TELEMETRY NOT CONFIGURED';
+    showingSample=false; $('visitorMode').textContent=live?'LIVE · NO VISITS YET':config.visitorApi?'LIVE DATA UNAVAILABLE':'TELEMETRY NOT CONFIGURED';
     $('visitorMode').classList.toggle('is-live',live);
     ['visitorTotal','visitorToday','visitorCountries'].forEach(id=>$(id).textContent=live?'0':'—');
-    $('visitorTotalCaption').textContent=live?'Recorded page visits':'Configure an analytics endpoint for live data';
+    $('visitorTotalCaption').textContent=live?'Recorded page visits':config.visitorApi?'Live counts temporarily unavailable · try Refresh':'Configure an analytics endpoint for live data';
     $('mapPoints').replaceChildren();
     $('visitorDemo').textContent='Show sample data';
     $('yourLocation').textContent='NO LIVE LOCATIONS';
@@ -258,14 +258,18 @@
       console.warn('Visitor analytics unavailable:',err);
       live=false;
       if(!showingSample)clearVisitors();
-      $('visitorMode').textContent='TELEMETRY OFFLINE · PREVIEW ONLY';
+      $('visitorMode').textContent=showingSample?'OFFLINE · SAMPLE DATA':'LIVE DATA UNAVAILABLE';
       $('visitorMode').classList.remove('is-live');
     }
   }
   $('visitorRefresh').addEventListener('click',()=>config.visitorApi?refreshLive(false):toast('No visitor endpoint configured; see website/DEPLOY.md'));
   async function initializeVisitors(){
-    // Show the labelled preview immediately, even while the country lookup loads.
-    drawVisitors(data.sampleVisits,true);
+    // A configured live atlas never flashes invented counts while loading.
+    if(config.visitorApi){
+      clearVisitors();
+      $('visitorMode').textContent='CONNECTING';
+      $('visitorTotalCaption').textContent='Loading recorded page visits…';
+    }else drawVisitors(data.sampleVisits,true);
     await loadCoords();
     if(showingSample)drawVisitors(data.sampleVisits,true);
     if(config.visitorApi)refreshLive(true);

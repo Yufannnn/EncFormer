@@ -24,7 +24,11 @@ For a standalone repo instead of `EncFormer`, put the contents of `docs/` at the
 
 ## B. Enable public visitor counts + country-level reader map (optional)
 
-The site initially displays an explicitly labeled **sample preview** of the visitor atlas; it does **not** pretend those visits are real. To replace it with live aggregate counts:
+The published site now uses `https://encformer-visitors.encformer-visitors.workers.dev` for live aggregate counts, on the **Workers Free plan**. Counts began when tracking was enabled; sample numbers are never imported. While loading or offline, the atlas displays a status message rather than substituting sample counts. The sample preview is available only when requested through its button.
+
+No paid plan is needed. Workers Free includes 100,000 requests/day; D1 Free includes 5 million rows read/day, 100,000 rows written/day and 5 GB of storage. Daily quotas reset at 00:00 UTC. On the Free plan, reaching a quota stops the affected operations rather than generating paid overage charges. Keep the account on Free. See [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/) and [D1 pricing](https://developers.cloudflare.com/d1/platform/pricing/).
+
+To set up another deployment:
 
 1. Create/log into a Cloudflare account, and install Node.js 20+ locally. In the extracted package:
 
@@ -57,7 +61,7 @@ The site initially displays an explicitly labeled **sample preview** of the visi
 
    Replace the example hostname with **your actual deployed Worker URL**. Commit and push the updated file to GitHub Pages. The site will now fetch `GET /api/summary` and issue one `POST /api/visit` per tab session, with no IP or fingerprint stored in D1.
 
-6. Verify by opening the published site in a regular (non-bot) browser, refreshing the visitor panel, and checking whether the mode indicator reads **LIVE AGGREGATE DATA**. Counts begin at zero and only accumulate after the Worker is enabled. There is **no transfer of the preview numbers** to production.
+6. Verify by opening the published site in a regular (non-bot) browser, refreshing the visitor panel, and checking whether the mode indicator reads **LIVE DATA**. Counts begin at zero and only accumulate after the Worker is enabled. There is **no transfer of the preview numbers** to production.
 
 **Local Worker checks:**
 
@@ -95,7 +99,8 @@ The private analytics dashboard and the public Worker counters may **not** repor
 | --- | --- |
 | 404 after enabling Pages | Check `main /docs`, case-sensitive URL, and Pages build status. |
 | Site loads without styles | Ensure `docs/styles.css` and `docs/app.js` were committed and not moved. |
-| Visitor panel says preview | `docs/config.js` has no Worker URL, or the Worker returned an error. |
+| Visitor panel says live data unavailable | Check the Worker endpoint and database binding, then click Refresh. |
+| Visitor panel says sample | Sample preview was selected, or `docs/config.js` has no Worker URL. |
 | Analytics CORS error | Add the exact website origin (no path) to `ALLOWED_ORIGINS`, then redeploy Worker. |
 | POST visit returns 400 | `SITE_PATH` must match the browser's `location.pathname` (`/EncFormer/`). |
 | POST visit returns 503 | Initialize D1 and confirm `database_id` and D1 `DB` binding in Wrangler config. |

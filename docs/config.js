@@ -7,7 +7,7 @@
  * Empty string = no tracking / no live counters / explicitly labeled preview.
  */
 window.ENCFORMER_CONFIG = {
-  visitorApi: "",
+  visitorApi: "https://encformer-visitors.encformer-visitors.workers.dev",
   // Optional: Cloudflare Web Analytics site token for a richer private dashboard.
   // Geographies, traffic sources, Core Web Vitals, etc. are shown in Cloudflare.
   cloudflareAnalyticsToken: "",

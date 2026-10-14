@@ -46,3 +46,12 @@ test('preflight is supported only for allowed site origin',async()=>{
   assert.equal(good.status,204); assert.equal(good.headers.get('access-control-allow-origin'),'https://yufannnn.github.io');
   assert.equal((await worker.fetch(req('/api/visit','OPTIONS','https://bad.example'),env)).status,403);
 });
+test('homepage index alias counts correctly and null JSON is rejected',async()=>{
+  const fresh={...env,DB:dbMock()};
+  const accepted=await worker.fetch(req('/api/visit','POST','https://yufannnn.github.io','SG',{page:'/EncFormer/index.html'}),fresh);
+  assert.equal(accepted.status,201);
+  const summary=await(await worker.fetch(req('/api/summary'),fresh)).json();
+  assert.equal(summary.total,1);
+  const invalid=new Request('https://example.workers.dev/api/visit',{method:'POST',headers:{Origin:'https://yufannnn.github.io','User-Agent':'Mozilla/5.0','Content-Type':'application/json'},body:'null'});
+  assert.equal((await worker.fetch(invalid,fresh)).status,400);
+});

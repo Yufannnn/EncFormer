@@ -63,7 +63,7 @@ export default {
         let body;
         try{body=JSON.parse(bodyText);}catch{return json({error:'Invalid JSON'},400,headers);}
         const expected=env.SITE_PATH || '/EncFormer/';
-        if(typeof body.page!=='string' || !(body.page===expected || body.page===expected.slice(0,-1))){
+        if(typeof body?.page!=='string' || !(body.page===expected || body.page===expected.slice(0,-1) || body.page===`${expected}index.html`)){
           return json({error:'Invalid site path'},400,headers);
         }
         const country=getCountry(request);
