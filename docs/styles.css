@@ -123,6 +123,8 @@ button:disabled { cursor:not-allowed; opacity:.5; }
 .ack-banner { padding-top:48px; padding-bottom:64px; }
 .resources-section { padding-bottom:40px; }
 .atlas-footer { padding-top:16px; padding-bottom:36px; }
+.footer-top,.footer-bottom { flex-wrap:wrap; }
+.footer-links { flex-wrap:wrap; gap:14px 24px; }
 .atlas-footer-inner { max-width:960px; margin:auto; display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:28px; align-items:center; padding-top:24px; border-top:1px solid var(--line); }
 .atlas-map { max-width:370px; }
 .atlas-heading { display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
